@@ -112,13 +112,17 @@ class SnmpLibrary:
 
         oid = self._parse_oid(oid)
 
-        _, error, _, var = cmdgen.CommandGenerator(self._snmp_engine).getCmd(
+        error_indication, error_status, _, var = \
+                cmdgen.CommandGenerator(self._snmp_engine).getCmd(
                 cmdgen.CommunityData(self.AGENT_NAME, self._community),
                 cmdgen.UdpTransportTarget((self._host, self._port)), oid
         )
 
-        if error != 0:
-            raise RuntimeError('SNMP GET failed: %s' % error.prettyPrint())
+        if error_indication is not Null:
+            raise RuntimeError('SNMP GET failed: %s' % error_indication
+        if error_status != 0:
+            raise RuntimeError('SNMP GET failed: %s' %
+                error_status.prettyPrint())
 
         oid, obj = var[0]
 
