@@ -1,4 +1,4 @@
-# 
+#
 # Kontron SnmpLibrary
 #
 # author: Michael Walle <michael.walle@kontron.com>
@@ -57,7 +57,7 @@ class SnmpLibrary:
 
         Preloading MIBs can be useful in cases where the `Get`- or
         `Set`-keyword should be executed as fast as possible.
-        
+
         `names` can either be a list of MIB names or can be empty in which case
         all available MIBs are preloaded.
 
@@ -94,7 +94,7 @@ class SnmpLibrary:
             suffixes = map(try_int, suffixes)
             suffixes = tuple(suffixes)
             oid = ((mib, sym),) + suffixes
-        
+
         return oid
 
     def get(self, oid):
@@ -166,31 +166,31 @@ class SnmpLibrary:
     def convert_to_integer(self, value):
         """Converts a value to a SNMP Integer object."""
         return rfc1902.Integer(value)
-        
+
     def convert_to_integer32(self, value):
         """Converts a value to a SNMP Integer32 object."""
         return rfc1902.Integer32(value)
-        
+
     def convert_to_counter32(self, value):
         """Converts a value to a SNMP Counter32 object."""
         return rfc1902.Counter32(value)
-        
+
     def convert_to_counter64(self, value):
         """Converts a value to a SNMP Counter64 object."""
         return rfc1902.Counter64(value)
-        
+
     def convert_to_gauge32(self, value):
         """Converts a value to a SNMP Gauge32 object."""
         return rfc1902.Gauge32(value)
-        
+
     def convert_to_unsigned32(self, value):
         """Converts a value to a SNMP Unsigned32 object."""
         return rfc1902.Unsigned32(value)
-        
+
     def convert_to_timeticks(self, value):
         """Converts a value to a SNMP TimeTicks object."""
         return rfc1902.TimeTicks(value)
-        
+
     def set_octetstring(self, value):
         """Does a SNMP SET request after converting the value to an
         OctetString SNMP Object.
