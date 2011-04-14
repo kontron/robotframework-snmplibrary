@@ -119,7 +119,7 @@ class SnmpLibrary:
         )
 
         if error_indication is not Null:
-            raise RuntimeError('SNMP GET failed: %s' % error_indication
+            raise RuntimeError('SNMP GET failed: %s' % error_indication)
         if error_status != 0:
             raise RuntimeError('SNMP GET failed: %s' %
                 error_status.prettyPrint())
