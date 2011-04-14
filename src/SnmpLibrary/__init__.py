@@ -118,7 +118,7 @@ class SnmpLibrary:
                 cmdgen.UdpTransportTarget((self._host, self._port)), oid
         )
 
-        if error_indication is not Null:
+        if error_indication is not None:
             raise RuntimeError('SNMP GET failed: %s' % error_indication)
         if error_status != 0:
             raise RuntimeError('SNMP GET failed: %s' %
