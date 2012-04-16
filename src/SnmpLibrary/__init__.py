@@ -5,12 +5,15 @@
 #
 
 import os.path
+import warnings
 
-from pysnmp.smi import builder
-from pysnmp.entity import engine
-from pysnmp.entity.rfc3413.oneliner import cmdgen
-from pyasn1.type import univ
-from pysnmp.proto import rfc1902
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    from pysnmp.smi import builder
+    from pysnmp.entity import engine
+    from pysnmp.entity.rfc3413.oneliner import cmdgen
+    from pyasn1.type import univ
+    from pysnmp.proto import rfc1902
 
 class _SnmpConnection:
     pass
