@@ -115,17 +115,17 @@ class SnmpLibrary:
 
         oid = self._parse_oid(oid)
 
-        error_indication, error_status, _, var = \
-                cmdgen.CommandGenerator(self._snmp_engine).getCmd(
+        error_indication, error, _, var = \
+            cmdgen.CommandGenerator(self._snmp_engine).getCmd(
                 cmdgen.CommunityData(self.AGENT_NAME, self._community),
-                cmdgen.UdpTransportTarget((self._host, self._port)), oid
+                cmdgen.UdpTransportTarget((self._host, self._port)),
+                oid
         )
 
         if error_indication is not None:
             raise RuntimeError('SNMP GET failed: %s' % error_indication)
-        if error_status != 0:
-            raise RuntimeError('SNMP GET failed: %s' %
-                error_status.prettyPrint())
+        if error != 0:
+            raise RuntimeError('SNMP GET failed: %s' % error.prettyPrint())
 
         oid, obj = var[0]
 
@@ -149,16 +149,23 @@ class SnmpLibrary:
         | Set | SNMPv2::sysDescr.0 | New System Description |
         """
 
+        if not self._host:
+            raise RuntimeError('No host set')
+
         oid = self._parse_oid(oid)
 
         #from pysnmp.proto import rfc1902
         #value = rfc1902.OctetString(value)
 
-        _, error, _, var = cmdgen.CommandGenerator(self._snmp_engine).setCmd(
+        error_indication, error, _, var = \
+            cmdgen.CommandGenerator(self._snmp_engine).setCmd(
                 cmdgen.CommunityData(self.AGENT_NAME, self._community),
-                cmdgen.UdpTransportTarget((self._host, 161)), (oid, value)
+                cmdgen.UdpTransportTarget((self._host, self._port)),
+                (oid, value)
         )
 
+        if error_indication is not None:
+            raise RuntimeError('SNMP SET failed: %s' % error_indication)
         if error != 0:
             raise RuntimeError('SNMP SET failed: %s' % error.prettyPrint())
 
@@ -334,9 +341,10 @@ class SnmpLibrary:
 
 if __name__ == "__main__":
     s = SnmpLibrary()
-    s.set_host('10.0.111.112')
+    s.set_host('10.0.113.254')
     s.set_community_string('private')
-    s.preload_mibs('SNMPv2-MIB')
+
+    #s.preload_mibs('SNMPv2-MIB')
     #s.load_mibs()
     #print s.get((1,3,6,1,2,1,1,1,0))
     #print s.get((('SNMPv2-MIB', 'sysDescr'), 0))
@@ -345,12 +353,13 @@ if __name__ == "__main__":
     #print s.get('sysDescr.0')
     #print s.get('.1.3.6.1.2.1.1.1.1')
     #s.set('.iso.org.6.internet.2.1.1.1.0', 'test')
-    print s.get('.1.3.6.1.2.1.1.1.0')
-    s.set('.1.3.6.1.2.1.1.6.0', 'Test')
-    print s.get('SNMPv2-MIB::sysLocation.0')
+    #print s.get('.1.3.6.1.2.1.1.1.0')
+    #s.set('.1.3.6.1.2.1.1.6.0', 'Test')
+    #print s.get('SNMPv2-MIB::sysLocation.0')
     #print s.get('KEX-MCG-MIB::clkRefValid.1.1')
-    print s.get('.1.3.6.1.4.1.15000.5.2.1.0')
+    #print s.get('.1.3.6.1.4.1.15000.5.2.1.0')
     #s.set('.1.3.6.1.4.1.15000.5.2.1.0', Gauge32(200))
-    s.set_gauge32('.1.3.6.1.4.1.15000.5.2.1.0', '200')
-    print s.get('.1.3.6.1.4.1.15000.5.2.1.0')
+    #s.set_gauge32('.1.3.6.1.4.1.15000.5.2.1.0', '200')
+    #print s.get('.1.3.6.1.4.1.15000.5.2.1.0')
+    print s.walk('.1.3.6.1.4.1.9.5.1.4.1.1')
 
