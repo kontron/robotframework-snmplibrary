@@ -162,6 +162,34 @@ class SnmpLibrary:
         if error != 0:
             raise RuntimeError('SNMP SET failed: %s' % error.prettyPrint())
 
+    def walk(self, oid):
+        """Does a SNMP WALK request.
+        """
+
+        if not self._host:
+            raise RuntimeError('No host set')
+
+        oid =  self._parse_oid(oid)
+
+        errorIndication, error, _, varBindTable = \
+            cmdgen.CommandGenerator(self._snmp_engine).nextCmd (
+                cmdgen.CommunityData(self.AGENT_NAME, self._community),
+                cmdgen.UdpTransportTarget((self._host, self._port)),
+                oid
+        )
+
+        if errorIndication:
+            raise RuntimeError('SNMP WALK failed: %s' % errorIndication)
+        if error != 0:
+            raise RuntimeError('SNMP WALK failed: %s' % error.prettyPrint())
+
+        oids = list()
+        for varBindTableRow in varBindTable:
+            oid, obj = varBindTableRow[0]
+            oids.append((oid.prettyOut(oid), obj.prettyOut(obj)))
+
+        return oids
+
     def convert_to_octetstring(self, value):
         """Converts a value to a SNMP OctetString object."""
         return rfc1902.OctetString(value)
