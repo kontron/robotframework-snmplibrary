@@ -100,7 +100,7 @@ class SnmpLibrary:
 
         return oid
 
-    def get(self, oid):
+    def get(self, oid, idx=(0,)):
         """Does a SNMP GET request.
 
         Examples:
@@ -113,7 +113,7 @@ class SnmpLibrary:
         if not self._host:
             raise RuntimeError('No host set')
 
-        oid = self._parse_oid(oid)
+        oid = self._parse_oid(oid) + idx
 
         error_indication, error, _, var = \
             cmdgen.CommandGenerator(self._snmp_engine).getCmd(
@@ -135,7 +135,7 @@ class SnmpLibrary:
 
         return obj.prettyOut(obj)
 
-    def set(self, oid, value):
+    def set(self, oid, value, idx=(0,)):
         """Does a SNMP GET request.
 
         See `Get` for more information on possible OID notations.
@@ -152,7 +152,7 @@ class SnmpLibrary:
         if not self._host:
             raise RuntimeError('No host set')
 
-        oid = self._parse_oid(oid)
+        oid = self._parse_oid(oid) + idx
 
         #from pysnmp.proto import rfc1902
         #value = rfc1902.OctetString(value)
@@ -256,7 +256,7 @@ class SnmpLibrary:
         """Converts a value to a SNMP TimeTicks object."""
         return rfc1902.TimeTicks(value)
 
-    def set_octetstring(self, value):
+    def set_octetstring(self, oid, value, idx=(0,)):
         """Does a SNMP SET request after converting the value to an
         OctetString SNMP Object.
 
@@ -265,9 +265,9 @@ class SnmpLibrary:
         """
 
         value = self.convert_to_octetstring(value)
-        self.set(oid, value)
+        self.set(oid, value, idx)
 
-    def set_integer(self, oid, value):
+    def set_integer(self, oid, value, idx=(0,)):
         """Does a SNMP SET request after converting the value to an
         Integer SNMP Object.
 
@@ -276,9 +276,9 @@ class SnmpLibrary:
         """
 
         value = self.convert_to_integer(value)
-        self.set(oid, value)
+        self.set(oid, value, idx)
 
-    def set_integer32(self, oid, value):
+    def set_integer32(self, oid, value, idx=(0,)):
         """Does a SNMP SET request after converting the value to an
         Integer32 SNMP Object.
 
@@ -286,9 +286,9 @@ class SnmpLibrary:
         """
 
         value = self.convert_to_integer32(value)
-        self.set(oid, value)
+        self.set(oid, value, idx)
 
-    def set_counter32(self, oid, value):
+    def set_counter32(self, oid, value, idx=(0,)):
         """Does a SNMP SET request after converting the value to a
         Counter32 SNMP Object.
 
@@ -296,9 +296,9 @@ class SnmpLibrary:
         """
 
         value = self.convert_to_counter32(value)
-        self.set(oid, value)
+        self.set(oid, value, idx)
 
-    def set_counter64(self, oid, value):
+    def set_counter64(self, oid, value, idx=(0,)):
         """Does a SNMP SET request after converting the value to a
         Counter64 SNMP Object.
 
@@ -306,9 +306,9 @@ class SnmpLibrary:
         """
 
         value = self.convert_to_counter64(value)
-        self.set(oid, value)
+        self.set(oid, value, idx)
 
-    def set_gauge32(self, oid, value):
+    def set_gauge32(self, oid, value, idx=(0,)):
         """Does a SNMP SET request after converting the value to a
         Gauge32 SNMP Object.
 
@@ -316,9 +316,9 @@ class SnmpLibrary:
         """
 
         value = self.convert_to_gauge32(value)
-        self.set(oid, value)
+        self.set(oid, value, idx)
 
-    def set_unsigned32(self, oid, value):
+    def set_unsigned32(self, oid, value, idx=(0,)):
         """Does a SNMP SET request after converting the value to a
         Unsigned32 SNMP Object.
 
@@ -326,9 +326,9 @@ class SnmpLibrary:
         """
 
         value = self.convert_to_unsigned32(value)
-        self.set(oid, value)
+        self.set(oid, value, idx)
 
-    def set_timeticks(self, oid, value):
+    def set_timeticks(self, oid, value, idx=(0,)):
         """Does a SNMP SET request after converting the value to a
         TimeTicks SNMP Object.
 
@@ -336,7 +336,7 @@ class SnmpLibrary:
         """
 
         value = self.convert_to_timeticks(value)
-        self.set(oid, value)
+        self.set(oid, value, idx)
 
     def _warn(self, msg):
         self._log(msg, 'WARN')
