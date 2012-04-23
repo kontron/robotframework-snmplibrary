@@ -80,7 +80,9 @@ class SnmpLibrary:
         #   .1.3.6.1.2.1.1.1.0
         #   .iso.org.6.internet.2.1.1.1.0
         #   sysDescr.0
-        if '::' in oid:
+        if not isinstance(oid, basestring):
+            return oid
+        elif '::' in oid:
             mib, sym = oid.split('::', 1)
             oid = None
         elif oid.startswith('.'):
