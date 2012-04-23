@@ -46,7 +46,7 @@ class SnmpLibrary:
         | Add MIB Search Path | /usr/share/mibs/ |
         """
 
-        self._info('Adding MIB path %s' % path)
+        self._info('Adding MIB path %s' % (path,))
         if not os.path.exists(path):
             raise RuntimeError('Path "%s" does not exist' % path)
 
@@ -114,6 +114,7 @@ class SnmpLibrary:
             raise RuntimeError('No host set')
 
         oid = self._parse_oid(oid) + idx
+        self._info('Fetching OID %s' % (oid,))
 
         error_indication, error, _, var = \
             cmdgen.CommandGenerator(self._snmp_engine).getCmd(
@@ -133,7 +134,10 @@ class SnmpLibrary:
             raise RuntimeError('Object with OID ".%s" not found' %
                     '.'.join(map(str, oid)))
 
-        return obj.prettyOut(obj)
+        value = obj.prettyOut(obj)
+        self._info('... was %s' % (value,))
+
+        return value
 
     def set(self, oid, value, idx=(0,)):
         """Does a SNMP GET request.
@@ -153,6 +157,7 @@ class SnmpLibrary:
             raise RuntimeError('No host set')
 
         oid = self._parse_oid(oid) + idx
+        self._info('Setting OID %s to %s' % (oid, value))
 
         #from pysnmp.proto import rfc1902
         #value = rfc1902.OctetString(value)
