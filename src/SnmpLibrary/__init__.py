@@ -197,6 +197,33 @@ class SnmpLibrary:
 
         return oids
 
+    def find_oid_by_value(self, oid, value):
+        """Return the first OID that matches a value in a list
+        """
+
+        oids = self.walk(oid)
+
+        for o in oids:
+            print o
+            if str(o[1]) == str(value):
+                return o[0]
+
+        raise RuntimeError('value=%s not found' % value)
+
+    def get_index_from_oid(self, oid, length=1):
+        """Return last part of oid.
+        If length is 1 only one element is returned.
+        Otherwise a tuple is returened.
+
+        Example:
+        |${val}=  | Get Part From OID | 1.3.6.1.2.1.2.2.1.2.10102 | 1 |
+        """
+
+        length = int(length)
+
+        oid = self._parse_oid(oid)
+        return oid[-length:]
+
     def convert_to_octetstring(self, value):
         """Converts a value to a SNMP OctetString object."""
         return rfc1902.OctetString(value)
