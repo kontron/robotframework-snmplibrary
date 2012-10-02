@@ -142,7 +142,7 @@ class SnmpLibrary:
         return value
 
     def set(self, oid, value, idx=(0,)):
-        """Does a SNMP GET request.
+        """Does a SNMP SET request.
 
         See `Get` for more information on possible OID notations.
 
@@ -177,7 +177,7 @@ class SnmpLibrary:
             raise RuntimeError('SNMP SET failed: %s' % error.prettyPrint())
 
     def walk(self, oid):
-        """Does a SNMP WALK request.
+        """Does a SNMP WALK request and returns the result as OID list.
         """
 
         if not self._host:
@@ -223,7 +223,7 @@ class SnmpLibrary:
         Otherwise a tuple is returened.
 
         Example:
-        |${val}=  | Get Part From OID | 1.3.6.1.2.1.2.2.1.2.10102 | 1 |
+        |${val}=  | Get Index From OID | 1.3.6.1.2.1.2.2.1.2.10102 | 1 |
         """
 
         length = int(length)
