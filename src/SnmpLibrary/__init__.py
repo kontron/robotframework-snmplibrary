@@ -115,6 +115,7 @@ class SnmpLibrary:
         if not self._host:
             raise RuntimeError('No host set')
 
+        idx = tuple(idx)
         oid = self._parse_oid(oid) + idx
         self._info('Fetching OID %s' % (oid,))
 
@@ -158,6 +159,7 @@ class SnmpLibrary:
         if not self._host:
             raise RuntimeError('No host set')
 
+        idx = tuple(idx)
         oid = self._parse_oid(oid) + idx
         self._info('Setting OID %s to %s' % (oid, value))
 
