@@ -6,6 +6,7 @@
 
 import os.path
 import warnings
+from robot.utils.connectioncache import ConnectionCache
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore",category=DeprecationWarning)
@@ -16,7 +17,12 @@ with warnings.catch_warnings():
     from pysnmp.proto import rfc1902
 
 class _SnmpConnection:
-    pass
+    def __init__(self, host, port=161, community_string=None):
+
+        self.host = host
+        self.port = port
+        self.community_string = community_string
+
 
 def try_int(i):
     try:
@@ -30,14 +36,62 @@ class SnmpLibrary:
         e = engine.SnmpEngine()
         self._snmp_engine = e
         self._builder = e.msgAndPduDsp.mibInstrumController.mibBuilder
-        self._host = None
+        self._active_connection = None
+        self._cache = ConnectionCache()
 
-    def set_host(self, host, port=161):
-        self._host = host
-        self._port = port
+    def open_snmp_connection(self, host, community_string=None, port=161,
+            alias=None):
+        """Opens a new Snmp Connection to the given host.
 
-    def set_community_string(self, community):
-        self._community = community
+        Set `community_string` that is used for this connection.
+
+        If no `port` is given, the default port 161 is used.
+
+        The optional `alias` is a name for the connection and it can be used
+        for switching between connections, similarly as the index. See `Switch
+        Connection` for more details about that.
+        """
+
+        host = str(host)
+        port = int(port)
+
+        if alias:
+            alias = str(alias)
+
+        conn = _SnmpConnection(host, port, community_string)
+        self._active_connection = conn
+
+        return self._cache.register(self._active_connection, alias)
+
+    def close_snmp_connection(self):
+        """Closes the current connection.
+        """
+        pass
+
+    def close_all_snmp_connection(self):
+        """Closes all open connections and empties the connection cache.
+
+        After this keyword, new indexes got from the `Open Connection`
+        keyword are reset to 1.
+
+        This keyword should be used in a test or suite teardown to
+        make sure all connections are closed.
+        """
+
+        self._active_connection = self._cache.close_all()
+
+    def switch_snmp_connection(self, index_or_alias):
+        """Switches between active connections using an index or alias.
+
+        The index is got from `Open Connection` keyword, and an alias
+        can be given to it.
+
+        Returns the index of previously active connection.
+        """
+
+        old_index = self._cache.current_index
+        self._active_connection = self._cache.switch(index_or_alias)
+        return old_index
 
     def add_mib_search_path(self, path):
         """Adds a path to the MIB search path.
@@ -103,26 +157,37 @@ class SnmpLibrary:
         return oid
 
     def get(self, oid, idx=(0,)):
-        """Does a SNMP GET request.
+        """Does a SNMP GET request for the specified 'oid'.
+
+        'idx' can be specified as tuple or as string.
 
         Examples:
-        | Get | SNMPv2-MIB::sysDescr.0 |
-        | Get | .1.3.6.1.2.1.1.1.0 |
-        | Get | .iso.org.6.internet.2.1.1.1.0 |
-        | Get | sysDescr.0 |
+        | ${value}=  | Get | SNMPv2-MIB::sysDescr.0 |
+        | ${value}=  | Get | .1.3.6.1.2.1.1.1.0 |
+        | ${value}=  | Get | .iso.org.6.internet.2.1.1.1.0 |
+        | ${value}=  | Get | sysDescr.0 |
+        | ${value}=  | Get | sysDescr.0 | 6
         """
 
-        if not self._host:
+        host = self._active_connection.host
+        port = self._active_connection.port
+        community = self._active_connection.community_string
+
+        if not host:
             raise RuntimeError('No host set')
 
-        idx = tuple(idx)
+        if  isinstance(idx,basestring):
+            idx = (int(idx),)
+        else:
+            idx = tuple(idx)
+
         oid = self._parse_oid(oid) + idx
         self._info('Fetching OID %s' % (oid,))
 
         error_indication, error, _, var = \
             cmdgen.CommandGenerator(self._snmp_engine).getCmd(
-                cmdgen.CommunityData(self.AGENT_NAME, self._community),
-                cmdgen.UdpTransportTarget((self._host, self._port)),
+                cmdgen.CommunityData(self.AGENT_NAME, community),
+                cmdgen.UdpTransportTarget((host, port)),
                 oid
         )
 
@@ -156,10 +221,18 @@ class SnmpLibrary:
         | Set | SNMPv2::sysDescr.0 | New System Description |
         """
 
-        if not self._host:
+        host = self._active_connection.host
+        port = self._active_connection.port
+        community = self._active_connection.community_string
+
+        if not host:
             raise RuntimeError('No host set')
 
-        idx = tuple(idx)
+        if  isinstance(idx, basestring):
+            idx = (int(idx),)
+        else:
+            idx = tuple(idx)
+
         oid = self._parse_oid(oid) + idx
         self._info('Setting OID %s to %s' % (oid, value))
 
@@ -168,8 +241,8 @@ class SnmpLibrary:
 
         error_indication, error, _, var = \
             cmdgen.CommandGenerator(self._snmp_engine).setCmd(
-                cmdgen.CommunityData(self.AGENT_NAME, self._community),
-                cmdgen.UdpTransportTarget((self._host, self._port)),
+                cmdgen.CommunityData(self.AGENT_NAME, community),
+                cmdgen.UdpTransportTarget((host, port)),
                 (oid, value)
         )
 
@@ -182,15 +255,19 @@ class SnmpLibrary:
         """Does a SNMP WALK request and returns the result as OID list.
         """
 
-        if not self._host:
+        host = self._active_connection.host
+        port = self._active_connection.port
+        community = self._active_connection.community_string
+
+        if not host:
             raise RuntimeError('No host set')
 
         oid =  self._parse_oid(oid)
 
         errorIndication, error, _, varBindTable = \
             cmdgen.CommandGenerator(self._snmp_engine).nextCmd (
-                cmdgen.CommunityData(self.AGENT_NAME, self._community),
-                cmdgen.UdpTransportTarget((self._host, self._port)),
+                cmdgen.CommunityData(self.AGENT_NAME, community),
+                cmdgen.UdpTransportTarget((host, port)),
                 oid
         )
 
