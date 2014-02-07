@@ -10,6 +10,14 @@ def main():
             description = 'SNMP Library for Robot Framework',
             author_email = 'michael.walle@kontron.com',
             package_dir = { '' : 'src' },
+            license = 'Apache License 2.0',
+            classifiers = [
+                'Development Status :: 4 - Beta',
+                'License :: OSI Approved :: Apache Software License',
+                'Operating System :: OS Independent',
+                'Programming Language :: Python',
+                'Topic :: Software Development :: Testing',
+            ],
             packages = [ 'HpiLibrary' ],
             install_requires = [ 'robotframework', 'pysnmp' ]
     )
