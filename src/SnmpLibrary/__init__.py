@@ -26,11 +26,13 @@ with warnings.catch_warnings():
 
 class _SnmpConnection:
     def __init__(self, host, port=161, community_string=None):
-
         self.host = host
         self.port = port
         self.community_string = community_string
 
+    def close(self):
+        # nothing to do atm
+        pass
 
 def try_int(i):
     try:
@@ -74,7 +76,7 @@ class SnmpLibrary:
     def close_snmp_connection(self):
         """Closes the current connection.
         """
-        pass
+        self._active_connection.close()
 
     def close_all_snmp_connections(self):
         """Closes all open connections and empties the connection cache.
