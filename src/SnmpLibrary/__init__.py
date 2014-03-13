@@ -76,7 +76,7 @@ class SnmpLibrary:
         """
         pass
 
-    def close_all_snmp_connection(self):
+    def close_all_snmp_connections(self):
         """Closes all open connections and empties the connection cache.
 
         After this keyword, new indexes got from the `Open Connection`
