@@ -18,7 +18,7 @@ def main():
                 'Programming Language :: Python',
                 'Topic :: Software Development :: Testing',
             ],
-            packages = [ 'HpiLibrary' ],
+            packages = [ 'SnmpLibrary' ],
             install_requires = [ 'robotframework', 'pysnmp' ]
     )
 
