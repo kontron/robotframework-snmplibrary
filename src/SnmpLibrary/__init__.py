@@ -296,15 +296,17 @@ class SnmpLibrary:
 
         return oids
 
-    def find_oid_by_value(self, oid, value):
+    def find_oid_by_value(self, oid, value, strip=False):
         """Return the first OID that matches a value in a list
         """
 
         oids = self.walk(oid)
 
         for o in oids:
-            print o
-            if str(o[1]) == str(value):
+            s = str(o[1])
+            if strip is True:
+                s = s.strip()
+            if s == str(value):
                 return o[0]
 
         raise RuntimeError('value=%s not found' % value)
