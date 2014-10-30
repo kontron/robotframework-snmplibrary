@@ -166,6 +166,15 @@ class SnmpLibrary:
 
         return oid
 
+    def _convert_idx_tuple(self, idx):
+        if  isinstance(idx, basestring):
+            idx = (int(idx),)
+        elif  isinstance(idx, int):
+            idx = idx,
+        else:
+            idx = tuple([int(v) for v in idx])
+        return idx
+
     def get(self, oid, idx=(0,)):
         """Does a SNMP GET request for the specified 'oid'.
 
@@ -186,10 +195,7 @@ class SnmpLibrary:
         if not host:
             raise RuntimeError('No host set')
 
-        if  isinstance(idx,basestring):
-            idx = (int(idx),)
-        else:
-            idx = tuple(idx)
+        idx = self._convert_idx_tuple(idx)
 
         oid = self._parse_oid(oid) + idx
         self._info('Fetching OID %s' % (oid,))
@@ -238,10 +244,7 @@ class SnmpLibrary:
         if not host:
             raise RuntimeError('No host set')
 
-        if  isinstance(idx, basestring):
-            idx = (int(idx),)
-        else:
-            idx = tuple(idx)
+        idx = self._convert_idx_tuple(idx)
 
         oid = self._parse_oid(oid) + idx
         self._info('Setting OID %s to %s' % (oid, value))
