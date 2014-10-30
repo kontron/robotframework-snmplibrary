@@ -313,6 +313,7 @@ class SnmpLibrary:
 
     def get_index_from_oid(self, oid, length=1):
         """Return last part of oid.
+
         If length is 1 only one element is returned.
         Otherwise a tuple is returened.
 
@@ -323,7 +324,11 @@ class SnmpLibrary:
         length = int(length)
 
         oid = self._parse_oid(oid)
-        return oid[-length:]
+
+        if length == 1:
+            return oid[-1]
+        else
+            return oid[-length:]
 
     def convert_to_octetstring(self, value):
         """Converts a value to a SNMP OctetString object."""
