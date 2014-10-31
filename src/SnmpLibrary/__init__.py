@@ -327,7 +327,7 @@ class SnmpLibrary:
 
         if length == 1:
             return oid[-1]
-        else
+        else:
             return oid[-length:]
 
     def convert_to_octetstring(self, value):
