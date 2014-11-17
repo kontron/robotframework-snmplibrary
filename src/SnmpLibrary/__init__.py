@@ -177,18 +177,7 @@ class SnmpLibrary:
 
         return tuple(idx)
 
-    def get(self, oid, idx=(0,)):
-        """Does a SNMP GET request for the specified 'oid'.
-
-        'idx' can be specified as tuple or as string.
-
-        Examples:
-        | ${value}=  | Get | SNMPv2-MIB::sysDescr.0 |
-        | ${value}=  | Get | .1.3.6.1.2.1.1.1.0 |
-        | ${value}=  | Get | .iso.org.6.internet.2.1.1.1.0 |
-        | ${value}=  | Get | sysDescr.0 |
-        | ${value}=  | Get | sysDescr.0 | 6
-        """
+    def _get(self, oid, idx=(0,)):
 
         host = self._active_connection.host
         port = self._active_connection.port
@@ -220,7 +209,50 @@ class SnmpLibrary:
             raise RuntimeError('Object with OID ".%s" not found' %
                     '.'.join(map(str, oid)))
 
+        return obj
+
+    def get(self, oid, idx=(0,)):
+        """Does a SNMP GET request for the specified 'oid'.
+
+        'idx' can be specified as tuple or as string.
+
+        Examples:
+        | ${value}=  | Get | SNMPv2-MIB::sysDescr.0 |
+        | ${value}=  | Get | .1.3.6.1.2.1.1.1.0 |
+        | ${value}=  | Get | .iso.org.6.internet.2.1.1.1.0 |
+        | ${value}=  | Get | sysDescr.0 |
+        | ${value}=  | Get | sysDescr.0 | 6
+        """
+        obj = self._get(oid, idx)
+
+        if univ.OctetString().isSuperTypeOf(obj):
+            value = obj.asNumbers()
+        else:
+            value = obj.prettyOut(obj)
+
+        self._info('... was %s' % (value,))
+
+        return value
+
+    def get_display_string(self, oid, idx=(0,)):
+        """Does a SNMP GET request for the specified 'oid'.
+
+        'idx' can be specified as tuple or as string.
+
+        Examples:
+        | ${value}=  | Get | SNMPv2-MIB::sysDescr.0 |
+        | ${value}=  | Get | .1.3.6.1.2.1.1.1.0 |
+        | ${value}=  | Get | .iso.org.6.internet.2.1.1.1.0 |
+        | ${value}=  | Get | sysDescr.0 |
+        | ${value}=  | Get | sysDescr.0 | 6
+        """
+        obj = self._get(oid, idx)
+
+        if not univ.OctetString().isSuperTypeOf(obj):
+            raise RuntimeError('Returned value is not an octetstring')
+
         value = obj.prettyOut(obj)
+
         self._info('... was %s' % (value,))
 
         return value
