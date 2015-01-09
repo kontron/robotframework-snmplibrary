@@ -42,6 +42,8 @@ def try_int(i):
 
 class SnmpLibrary:
     AGENT_NAME = 'robotframework agent'
+    ROBOT_LIBRARY_VERSION = '0.0.1'
+    ROBOT_LIBRARY_SCOPE = 'TEST SUITE'
 
     def __init__(self):
         e = engine.SnmpEngine()
