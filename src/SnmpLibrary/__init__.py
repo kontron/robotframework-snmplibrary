@@ -42,6 +42,7 @@ def try_int(i):
 
 class SnmpLibrary:
     AGENT_NAME = 'robotframework agent'
+
     def __init__(self):
         e = engine.SnmpEngine()
         self._snmp_engine = e
@@ -166,8 +167,10 @@ class SnmpLibrary:
 
         return oid
 
+    def _format_oid(self, oid):
+        return '.' + '.'.join(map(str, oid))
 
-    def _get(self, oid, idx=(0,)):
+    def _get(self, oid, idx=(0,), expect_display_string=False):
 
         host = self._active_connection.host
         port = self._active_connection.port
@@ -179,7 +182,6 @@ class SnmpLibrary:
         idx = convert_idx_to_tuple(idx)
 
         oid = self._parse_oid(oid) + idx
-        self._info('Fetching OID %s' % (oid,))
 
         error_indication, error, _, var = \
             cmdgen.CommandGenerator(self._snmp_engine).getCmd(
@@ -196,10 +198,21 @@ class SnmpLibrary:
         oid, obj = var[0]
 
         if obj == univ.Null(''):
-            raise RuntimeError('Object with OID ".%s" not found' %
-                    '.'.join(map(str, oid)))
+            raise RuntimeError('Object with OID %s not found' %
+                    self._format_oid(oid))
 
-        return obj
+        if expect_display_string:
+            if not univ.OctetString().isSuperTypeOf(obj):
+                raise RuntimeError('Returned value is not an octetstring')
+            value = obj.prettyOut(obj)
+        elif univ.OctetString().isSuperTypeOf(obj):
+            value = obj.asNumbers()
+        else:
+            value = obj.prettyOut(obj)
+
+        self._info('OID %s has value %s' % (self._format_oid(oid), value))
+
+        return value
 
     def get(self, oid, idx=(0,)):
         """Does a SNMP GET request for the specified 'oid'.
@@ -213,39 +226,14 @@ class SnmpLibrary:
         | ${value}=  | Get | sysDescr.0 |
         | ${value}=  | Get | sysDescr.0 | 6
         """
-        obj = self._get(oid, idx)
-
-        if univ.OctetString().isSuperTypeOf(obj):
-            value = obj.asNumbers()
-        else:
-            value = obj.prettyOut(obj)
-
-        self._info('... was %s' % (value,))
-
-        return value
+        return self._get(oid, idx)
 
     def get_display_string(self, oid, idx=(0,)):
         """Does a SNMP GET request for the specified 'oid'.
 
-        'idx' can be specified as tuple or as string.
-
-        Examples:
-        | ${value}=  | Get | SNMPv2-MIB::sysDescr.0 |
-        | ${value}=  | Get | .1.3.6.1.2.1.1.1.0 |
-        | ${value}=  | Get | .iso.org.6.internet.2.1.1.1.0 |
-        | ${value}=  | Get | sysDescr.0 |
-        | ${value}=  | Get | sysDescr.0 | 6
+        For more information and an example see `Get`.
         """
-        obj = self._get(oid, idx)
-
-        if not univ.OctetString().isSuperTypeOf(obj):
-            raise RuntimeError('Returned value is not an octetstring')
-
-        value = obj.prettyOut(obj)
-
-        self._info('... was %s' % (value,))
-
-        return value
+        return self._get(oid, idx, expect_display_string=True)
 
     def set(self, oid, value, idx=(0,)):
         """Does a SNMP SET request.
@@ -271,7 +259,7 @@ class SnmpLibrary:
         idx = convert_idx_to_tuple(idx)
 
         oid = self._parse_oid(oid) + idx
-        self._info('Setting OID %s to %s' % (oid, value))
+        self._info('Setting OID %s to %s' % (self._format_oid(oid), value))
 
         #from pysnmp.proto import rfc1902
         #value = rfc1902.OctetString(value)
