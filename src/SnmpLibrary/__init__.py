@@ -14,6 +14,7 @@
 
 import os.path
 import warnings
+from itertools import islice, izip
 from robot.utils.connectioncache import ConnectionCache
 
 with warnings.catch_warnings():
@@ -306,7 +307,7 @@ class SnmpLibrary:
         oids = list()
         for varBindTableRow in varBindTable:
             oid, obj = varBindTableRow[0]
-            oids.append((oid.prettyOut(oid), obj.prettyOut(obj)))
+            oids.append((oid, obj.prettyOut(obj)))
 
         return oids
 
@@ -324,6 +325,58 @@ class SnmpLibrary:
                 return o[0]
 
         raise RuntimeError('value=%s not found' % value)
+
+    def find_index(self, index_length, *args):
+        """Searches an index in given datasets.
+
+        There are some SNMP tables where the index is an arbitrary one. In this
+        case you have to walk through the table and find a row where some
+        columns match your values.
+
+        For example consider the following table:
+
+        | =a= | =b= | =c= | =d= | =e= |
+        |  2  |  2  |  2  |  3  |  3  |
+        |  2  |  3  |  2  |  5  |  6  |
+
+        You want to know the value of d where a is 2 and b is 3.
+
+        | ${a}= | Walk ${oidOfA} | | | | | |
+        | ${b}= | Walk ${oidOfB} | | | | | |
+        | ${idx}= | Find Index | 1 | ${a} | 2 | ${b} | 3 |
+        | ${valueOfD}= | Get | ${oidOfD} | index=${idx} | | | |
+
+        The index_length parameter is the length of the part of the OID which
+        denotes the index. Eg. if you have an OID .1.3.6.1.4.1234.1.2.3 and
+        index_length is 2, the index would be (2,3).
+        """
+        if len(args) % 2 != 0:
+            raise RuntimeError('Called with an invalid amount of arguments')
+
+        data = islice(args, 0, None, 2)
+        match = islice(args, 1, None, 2)
+
+        l = list()
+        for e in izip(data, match):
+            # match our desired value
+            d = filter(lambda x: x[1] == e[1], e[0])
+
+            # we only need the index part of the oid
+            d = map(lambda x: (x[0][-int(index_length):]), d)
+
+            # now convert the list of indices to a set
+            d = set(d)
+            l.append(d)
+
+        # intersect all sets
+        s = set(l[0]).intersection(*l[1:])
+
+        if len(s) == 0:
+            raise RuntimeError('No index found for the given matches')
+        if len(s) > 1:
+            raise RuntimeError('Ambiguous match. Found %d matching indices' %
+                    len(s))
+        return s.pop()
 
     def get_index_from_oid(self, oid, length=1):
         """Return last part of oid.
