@@ -182,7 +182,7 @@ class SnmpLibrary:
         if not host:
             raise RuntimeError('No host set')
 
-        idx = convert_idx_to_tuple(idx)
+        idx = self.convert_idx_to_tuple(idx)
 
         oid = self._parse_oid(oid) + idx
 
@@ -259,7 +259,7 @@ class SnmpLibrary:
         if not host:
             raise RuntimeError('No host set')
 
-        idx = convert_idx_to_tuple(idx)
+        idx = self.convert_idx_to_tuple(idx)
 
         oid = self._parse_oid(oid) + idx
         self._info('Setting OID %s to %s' % (self._format_oid(oid), value))
@@ -538,39 +538,17 @@ class SnmpLibrary:
             return False
         raise RuntimeError("Invalid log level '%s'" % level)
 
+    def convert_idx_to_tuple(self, idx):
+        if isinstance(idx, basestring):
+            idx = map(int, idx.split('.'))
+        elif isinstance(idx, int):
+            idx = idx,
+        else:
+            # Assume interable list
+            idx = map(int, idx)
+        return tuple(idx)
 
-def convert_idx_to_tuple(idx):
-    if isinstance(idx, basestring):
-        idx = map(int, idx.split('.'))
-    elif isinstance(idx, int):
-        idx = idx,
-    else:
-        # Assume interable list
-        idx = map(int, idx)
-    return tuple(idx)
 
-
-def test_convert_idx_to_tuple():
-
-    idx = "10.20.30"
-    t = convert_idx_to_tuple(idx)
-    assert isinstance(t, tuple)
-    assert t == (10, 20, 30)
-
-    idx = 10
-    t = convert_idx_to_tuple(idx)
-    assert isinstance(t, tuple)
-    assert t == (10,)
-
-    idx = [10, 20, 30]
-    t = convert_idx_to_tuple(idx)
-    assert isinstance(t, tuple)
-    assert t == (10, 20, 30)
-
-    idx = (10, 20, 30)
-    t = convert_idx_to_tuple(idx)
-    assert isinstance(t, tuple)
-    assert t == (10, 20, 30)
 
 
 if __name__ == "__main__":
