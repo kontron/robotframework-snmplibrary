@@ -20,16 +20,16 @@ from robot.utils.connectioncache import ConnectionCache
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore",category=DeprecationWarning)
     from pysnmp.smi import builder
-    from pysnmp.entity import engine
+    from pysnmp.entity import engine, config
     from pysnmp.entity.rfc3413.oneliner import cmdgen
     from pyasn1.type import univ
     from pysnmp.proto import rfc1902
 
 class _SnmpConnection:
-    def __init__(self, host, port=161, community_string=None):
-        self.host = host
-        self.port = port
-        self.community_string = community_string
+
+    def __init__(self, authentication, transportTarget):
+        self.authenticationData = authentication
+        self.transportTarget = transportTarget
 
     def close(self):
         # nothing to do atm
@@ -72,7 +72,80 @@ class SnmpLibrary:
         if alias:
             alias = str(alias)
 
-        conn = _SnmpConnection(host, port, community_string)
+        authenticationData = cmdgen.CommunityData(self.AGENT_NAME,
+                                       community_string)
+        transportTarget = cmdgen.UdpTransportTarget((host, port))
+
+        conn = _SnmpConnection(authenticationData, transportTarget)
+        self._active_connection = conn
+
+        return self._cache.register(self._active_connection, alias)
+
+    def open_snmp_v3_connection(self, host, user, password='',
+            encryption_password=None, authentication_protocol=None,
+            encryption_protocol=None, port=161, alias=None):
+        """Opens a new SNMP v3 Connection to the given host.
+
+        If no `port` is given, the default port 161 is used.
+
+        Valid values for `authentication_protocol` are `MD5`, `SHA`, and None.
+        Valid values for `encryption_protocol` are `DES`,`3DES`, `AES128`, `AES192`,
+        `AES256` and None.
+
+        The optional `alias` is a name for the connection and it can be used
+        for switching between connections, similarly as the index. See `Switch
+        Connection` for more details about that.
+        """
+
+        host = str(host)
+        port = int(port)
+        user = str(user)
+        password = str(password)
+
+        if encryption_password is not None:
+            encryption_password = str(encryption_password)
+
+        authentication_protocol = str(authentication_protocol)
+        encryption_protocol = str(encryption_protocol)
+
+        if alias:
+            alias = str(alias)
+
+        auth_map = {
+            'None': config.usmNoAuthProtocol,
+            'MD5': config.usmHMACMD5AuthProtocol,
+            'SHA': config.usmHMACSHAAuthProtocol
+        }
+
+        encrypt_map = {
+            'None': config.usmNoPrivProtocol,
+            'DES': config.usmDESPrivProtocol,
+            'AES128': config.usmAesCfb128Protocol,
+            '3DES': config.usm3DESEDEPrivProtocol,
+            'AES192': config.usmAesCfb192Protocol,
+            'AES256': config.usmAesCfb256Protocol,
+        }
+
+        if not auth_map.has_key(authentication_protocol):
+            raise RuntimeError('Authentication protocol "%s" not supported' %
+                                                    authentication_protocol)
+        authentication_protocol = auth_map[authentication_protocol]
+
+        if not encrypt_map.has_key(encryption_protocol):
+            raise RuntimeError('Encryption protocol "%s" not supported' %
+                                                    encryption_protocol)
+        encryption_protocol = encrypt_map[encryption_protocol]
+
+
+        authenticationData = cmdgen.UsmUserData(
+                                    user, password,
+                                    privKey=encryption_password,
+                                    authProtocol=authentication_protocol,
+                                    privProtocol=encryption_protocol)
+
+        transportTarget = cmdgen.UdpTransportTarget((host, port))
+
+        conn = _SnmpConnection(authenticationData, transportTarget)
         self._active_connection = conn
 
         return self._cache.register(self._active_connection, alias)
@@ -81,6 +154,7 @@ class SnmpLibrary:
         """Closes the current connection.
         """
         self._active_connection.close()
+        self._active_connection = None
 
     def close_all_snmp_connections(self):
         """Closes all open connections and empties the connection cache.
@@ -93,6 +167,7 @@ class SnmpLibrary:
         """
 
         self._active_connection = self._cache.close_all()
+        self._active_connection = None
 
     def switch_snmp_connection(self, index_or_alias):
         """Switches between active connections using an index or alias.
@@ -175,21 +250,16 @@ class SnmpLibrary:
 
     def _get(self, oid, idx=(0,), expect_display_string=False):
 
-        host = self._active_connection.host
-        port = self._active_connection.port
-        community = self._active_connection.community_string
-
-        if not host:
-            raise RuntimeError('No host set')
+        if self._active_connection is None:
+            raise RuntimeError('No transport host set')
 
         idx = self.convert_idx_to_tuple(idx)
-
         oid = self._parse_oid(oid) + idx
 
         error_indication, error, _, var = \
             cmdgen.CommandGenerator(self._snmp_engine).getCmd(
-                cmdgen.CommunityData(self.AGENT_NAME, community),
-                cmdgen.UdpTransportTarget((host, port)),
+                self._active_connection.authenticationData,
+                self._active_connection.transportTarget,
                 oid
         )
 
@@ -252,25 +322,17 @@ class SnmpLibrary:
         | Set | SNMPv2::sysDescr.0 | New System Description |
         """
 
-        host = self._active_connection.host
-        port = self._active_connection.port
-        community = self._active_connection.community_string
-
-        if not host:
-            raise RuntimeError('No host set')
+        if self._active_connection is None:
+            raise RuntimeError('No transport host set')
 
         idx = self.convert_idx_to_tuple(idx)
-
         oid = self._parse_oid(oid) + idx
         self._info('Setting OID %s to %s' % (self._format_oid(oid), value))
 
-        #from pysnmp.proto import rfc1902
-        #value = rfc1902.OctetString(value)
-
         error_indication, error, _, var = \
             cmdgen.CommandGenerator(self._snmp_engine).setCmd(
-                cmdgen.CommunityData(self.AGENT_NAME, community),
-                cmdgen.UdpTransportTarget((host, port)),
+                self._active_connection.authenticationData,
+                self._active_connection.transportTarget,
                 (oid, value)
         )
 
@@ -283,19 +345,15 @@ class SnmpLibrary:
         """Does a SNMP WALK request and returns the result as OID list.
         """
 
-        host = self._active_connection.host
-        port = self._active_connection.port
-        community = self._active_connection.community_string
-
-        if not host:
-            raise RuntimeError('No host set')
+        if self._active_connection is None:
+            raise RuntimeError('No transport host set')
 
         oid =  self._parse_oid(oid)
 
         errorIndication, error, _, varBindTable = \
             cmdgen.CommandGenerator(self._snmp_engine).nextCmd (
-                cmdgen.CommunityData(self.AGENT_NAME, community),
-                cmdgen.UdpTransportTarget((host, port)),
+                self._active_connection.authenticationData,
+                self._active_connection.transportTarget,
                 oid
         )
 
