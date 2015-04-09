@@ -18,7 +18,7 @@ from itertools import islice, izip
 from robot.utils.connectioncache import ConnectionCache
 
 with warnings.catch_warnings():
-    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
     from pysnmp.smi import builder
     from pysnmp.entity import engine, config
     from pysnmp.entity.rfc3413.oneliner import cmdgen
@@ -27,9 +27,9 @@ with warnings.catch_warnings():
 
 class _SnmpConnection:
 
-    def __init__(self, authentication, transportTarget):
-        self.authenticationData = authentication
-        self.transportTarget = transportTarget
+    def __init__(self, authentication, transport_target):
+        self.authentication_data = authentication
+        self.transport_target = transport_target
 
     def close(self):
         # nothing to do atm
@@ -47,9 +47,8 @@ class SnmpLibrary:
     ROBOT_LIBRARY_SCOPE = 'TEST SUITE'
 
     def __init__(self):
-        e = engine.SnmpEngine()
-        self._snmp_engine = e
-        self._builder = e.msgAndPduDsp.mibInstrumController.mibBuilder
+        self._snmp_engine = engine.SnmpEngine()
+        self._builder = self._snmp_engine.msgAndPduDsp.mibInstrumController.mibBuilder
         self._active_connection = None
         self._cache = ConnectionCache()
 
@@ -72,12 +71,12 @@ class SnmpLibrary:
         if alias:
             alias = str(alias)
 
-        authenticationData = cmdgen.CommunityData(self.AGENT_NAME,
+        authentication_data = cmdgen.CommunityData(self.AGENT_NAME,
                                        community_string)
-        transportTarget = cmdgen.UdpTransportTarget((host, port))
+        transport_target = cmdgen.UdpTransportTarget((host, port))
 
-        conn = _SnmpConnection(authenticationData, transportTarget)
-        self._active_connection = conn
+        connection = _SnmpConnection(authentication_data, transport_target)
+        self._active_connection = connection
 
         return self._cache.register(self._active_connection, alias)
 
@@ -137,13 +136,13 @@ class SnmpLibrary:
         encryption_protocol = encrypt_map[encryption_protocol]
 
 
-        authenticationData = cmdgen.UsmUserData(
+        authentication_data = cmdgen.UsmUserData(
                                     user, password,
                                     privKey=encryption_password,
                                     authProtocol=authentication_protocol,
                                     privProtocol=encryption_protocol)
 
-        transportTarget = cmdgen.UdpTransportTarget((host, port))
+        transport_target = cmdgen.UdpTransportTarget((host, port))
 
         conn = _SnmpConnection(authenticationData, transportTarget)
         self._active_connection = conn
@@ -350,21 +349,21 @@ class SnmpLibrary:
 
         oid =  self._parse_oid(oid)
 
-        errorIndication, error, _, varBindTable = \
+        error_indication, error, _, var_bind_table = \
             cmdgen.CommandGenerator(self._snmp_engine).nextCmd (
                 self._active_connection.authenticationData,
                 self._active_connection.transportTarget,
                 oid
         )
 
-        if errorIndication:
-            raise RuntimeError('SNMP WALK failed: %s' % errorIndication)
+        if error_indication:
+            raise RuntimeError('SNMP WALK failed: %s' % error_indication)
         if error != 0:
             raise RuntimeError('SNMP WALK failed: %s' % error.prettyPrint())
 
         oids = list()
-        for varBindTableRow in varBindTable:
-            oid, obj = varBindTableRow[0]
+        for var_bind_table_row in var_bind_table:
+            oid, obj = var_bind_table_row[0]
             oids.append((oid, obj.prettyOut(obj)))
 
         return oids
@@ -375,12 +374,12 @@ class SnmpLibrary:
 
         oids = self.walk(oid)
 
-        for o in oids:
-            s = str(o[1])
+        for oid in oids:
+            s = str(oid[1])
             if strip is True:
                 s = s.strip()
             if s == str(value):
-                return o[0]
+                return oid[0]
 
         raise RuntimeError('value=%s not found' % value)
 
@@ -610,26 +609,26 @@ class SnmpLibrary:
 
 
 if __name__ == "__main__":
-    s = SnmpLibrary()
-    s.set_host('10.0.113.254')
-    s.set_community_string('private')
+    snmp = SnmpLibrary()
+    snmp.set_host('10.0.113.254')
+    snmp.set_community_string('private')
 
-    #s.preload_mibs('SNMPv2-MIB')
-    #s.load_mibs()
-    #print s.get((1,3,6,1,2,1,1,1,0))
-    #print s.get((('SNMPv2-MIB', 'sysDescr'), 0))
-    #print s.get(('SNMPv2-MIB', ''))
-    #print s.get('SNMPv2-MIB::sysDescr.0')
-    #print s.get('sysDescr.0')
-    #print s.get('.1.3.6.1.2.1.1.1.1')
-    #s.set('.iso.org.6.internet.2.1.1.1.0', 'test')
-    #print s.get('.1.3.6.1.2.1.1.1.0')
-    #s.set('.1.3.6.1.2.1.1.6.0', 'Test')
-    #print s.get('SNMPv2-MIB::sysLocation.0')
-    #print s.get('KEX-MCG-MIB::clkRefValid.1.1')
-    #print s.get('.1.3.6.1.4.1.15000.5.2.1.0')
-    #s.set('.1.3.6.1.4.1.15000.5.2.1.0', Gauge32(200))
-    #s.set_gauge32('.1.3.6.1.4.1.15000.5.2.1.0', '200')
-    #print s.get('.1.3.6.1.4.1.15000.5.2.1.0')
-    print s.walk('.1.3.6.1.4.1.9.5.1.4.1.1')
+    #snmp.preload_mibs('SNMPv2-MIB')
+    #snmp.load_mibs()
+    #print snmp.get((1,3,6,1,2,1,1,1,0))
+    #print snmp.get((('SNMPv2-MIB', 'sysDescr'), 0))
+    #print snmp.get(('SNMPv2-MIB', ''))
+    #print snmp.get('SNMPv2-MIB::sysDescr.0')
+    #print snmp.get('sysDescr.0')
+    #print snmp.get('.1.3.6.1.2.1.1.1.1')
+    #snmp.set('.iso.org.6.internet.2.1.1.1.0', 'test')
+    #print snmp.get('.1.3.6.1.2.1.1.1.0')
+    #snmp.set('.1.3.6.1.2.1.1.6.0', 'Test')
+    #print snmp.get('SNMPv2-MIB::sysLocation.0')
+    #print snmp.get('KEX-MCG-MIB::clkRefValid.1.1')
+    #print snmp.get('.1.3.6.1.4.1.15000.5.2.1.0')
+    #snmp.set('.1.3.6.1.4.1.15000.5.2.1.0', Gauge32(200))
+    #snmp.set_gauge32('.1.3.6.1.4.1.15000.5.2.1.0', '200')
+    #print snmp.get('.1.3.6.1.4.1.15000.5.2.1.0')
+    print snmp.walk('.1.3.6.1.4.1.9.5.1.4.1.1')
 
