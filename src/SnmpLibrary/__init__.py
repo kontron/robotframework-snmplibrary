@@ -47,8 +47,9 @@ class SnmpLibrary:
     ROBOT_LIBRARY_SCOPE = 'TEST SUITE'
 
     def __init__(self):
-        self._snmp_engine = engine.SnmpEngine()
-        self._builder = self._snmp_engine.msgAndPduDsp.mibInstrumController.mibBuilder
+        eng = engine.SnmpEngine()
+        self._snmp_engine = eng
+        self._builder = eng.msgAndPduDsp.mibInstrumController.mibBuilder
         self._active_connection = None
         self._cache = ConnectionCache()
 
@@ -88,8 +89,8 @@ class SnmpLibrary:
         If no `port` is given, the default port 161 is used.
 
         Valid values for `authentication_protocol` are `MD5`, `SHA`, and None.
-        Valid values for `encryption_protocol` are `DES`,`3DES`, `AES128`, `AES192`,
-        `AES256` and None.
+        Valid values for `encryption_protocol` are `DES`,`3DES`, `AES128`,
+        `AES192`, `AES256` and None.
 
         The optional `alias` is a name for the connection and it can be used
         for switching between connections, similarly as the index. See `Switch
@@ -144,7 +145,7 @@ class SnmpLibrary:
 
         transport_target = cmdgen.UdpTransportTarget((host, port))
 
-        conn = _SnmpConnection(authenticationData, transportTarget)
+        conn = _SnmpConnection(authentication_data, transport_target)
         self._active_connection = conn
 
         return self._cache.register(self._active_connection, alias)
@@ -257,8 +258,8 @@ class SnmpLibrary:
 
         error_indication, error, _, var = \
             cmdgen.CommandGenerator(self._snmp_engine).getCmd(
-                self._active_connection.authenticationData,
-                self._active_connection.transportTarget,
+                self._active_connection.authentication_data,
+                self._active_connection.transport_target,
                 oid
         )
 
@@ -330,8 +331,8 @@ class SnmpLibrary:
 
         error_indication, error, _, var = \
             cmdgen.CommandGenerator(self._snmp_engine).setCmd(
-                self._active_connection.authenticationData,
-                self._active_connection.transportTarget,
+                self._active_connection.authentication_data,
+                self._active_connection.transport_target,
                 (oid, value)
         )
 
@@ -351,8 +352,8 @@ class SnmpLibrary:
 
         error_indication, error, _, var_bind_table = \
             cmdgen.CommandGenerator(self._snmp_engine).nextCmd (
-                self._active_connection.authenticationData,
-                self._active_connection.transportTarget,
+                self._active_connection.authentication_data,
+                self._active_connection.transport_target,
                 oid
         )
 
