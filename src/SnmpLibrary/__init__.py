@@ -28,6 +28,10 @@ with warnings.catch_warnings():
 class _SnmpConnection:
 
     def __init__(self, authentication, transport_target):
+        eng = engine.SnmpEngine()
+        self.builder = eng.msgAndPduDsp.mibInstrumController.mibBuilder
+
+        self.cmd_gen = cmdgen.CommandGenerator(eng)
         self.authentication_data = authentication
         self.transport_target = transport_target
 
@@ -47,9 +51,6 @@ class SnmpLibrary:
     ROBOT_LIBRARY_SCOPE = 'TEST SUITE'
 
     def __init__(self):
-        eng = engine.SnmpEngine()
-        self._snmp_engine = eng
-        self._builder = eng.msgAndPduDsp.mibInstrumController.mibBuilder
         self._active_connection = None
         self._cache = ConnectionCache()
 
@@ -100,48 +101,44 @@ class SnmpLibrary:
         host = str(host)
         port = int(port)
         user = str(user)
-        password = str(password)
+        if password is not None:
+            password = str(password)
 
         if encryption_password is not None:
             encryption_password = str(encryption_password)
 
-        authentication_protocol = str(authentication_protocol)
-        encryption_protocol = str(encryption_protocol)
-
         if alias:
             alias = str(alias)
 
-        auth_map = {
-            'None': config.usmNoAuthProtocol,
-            'MD5': config.usmHMACMD5AuthProtocol,
-            'SHA': config.usmHMACSHAAuthProtocol
-        }
-
-        encrypt_map = {
-            'None': config.usmNoPrivProtocol,
-            'DES': config.usmDESPrivProtocol,
-            'AES128': config.usmAesCfb128Protocol,
-            '3DES': config.usm3DESEDEPrivProtocol,
-            'AES192': config.usmAesCfb192Protocol,
-            'AES256': config.usmAesCfb256Protocol,
-        }
-
-        if not auth_map.has_key(authentication_protocol):
-            raise RuntimeError('Authentication protocol "%s" not supported' %
+        try:
+            authentication_protocol = {
+                None: cmdgen.usmNoAuthProtocol,
+                'MD5': cmdgen.usmHMACMD5AuthProtocol,
+                'SHA': cmdgen.usmHMACSHAAuthProtocol
+            }[authentication_protocol]
+        except KeyError:
+            raise ValueError('Invalid authentication protocol %s' %
                                                     authentication_protocol)
-        authentication_protocol = auth_map[authentication_protocol]
 
-        if not encrypt_map.has_key(encryption_protocol):
-            raise RuntimeError('Encryption protocol "%s" not supported' %
+        try:
+            encryption_protocol = {
+                None: cmdgen.usmNoPrivProtocol,
+                'DES': cmdgen.usmDESPrivProtocol,
+                '3DES': cmdgen.usm3DESEDEPrivProtocol,
+                'AES128': cmdgen.usmAesCfb128Protocol,
+                'AES192': cmdgen.usmAesCfb192Protocol,
+                'AES256': cmdgen.usmAesCfb256Protocol,
+            }[encryption_protocol]
+        except KeyError:
+            raise ValueError('Invalid encryption protocol %s' %
                                                     encryption_protocol)
-        encryption_protocol = encrypt_map[encryption_protocol]
-
 
         authentication_data = cmdgen.UsmUserData(
-                                    user, password,
-                                    privKey=encryption_password,
-                                    authProtocol=authentication_protocol,
-                                    privProtocol=encryption_protocol)
+                                    user,
+                                    password,
+                                    encryption_password,
+                                    authentication_protocol,
+                                    encryption_protocol)
 
         transport_target = cmdgen.UdpTransportTarget((host, port))
 
@@ -193,10 +190,10 @@ class SnmpLibrary:
         if not os.path.exists(path):
             raise RuntimeError('Path "%s" does not exist' % path)
 
-        paths = self._builder.getMibPath()
+        paths = self._active_connection.builder.getMibPath()
         paths += (path, )
         self._debug('New paths: %s' % ' '.join(paths))
-        self._builder.setMibPath(*paths)
+        self._active_connection.builder.setMibPath(*paths)
 
     def preload_mibs(self, *names):
         """Preloads MIBs.
@@ -215,7 +212,7 @@ class SnmpLibrary:
             self._info('Preloading MIBs %s' % ' '.join(list(names)))
         else:
             self._info('Preloading all available MIBs')
-        self._builder.loadModules(*names)
+        self._active_connection.builder.loadModules(*names)
 
     def _parse_oid(self, oid):
         # The following notations are possible:
@@ -257,7 +254,7 @@ class SnmpLibrary:
         oid = self._parse_oid(oid) + idx
 
         error_indication, error, _, var = \
-            cmdgen.CommandGenerator(self._snmp_engine).getCmd(
+            self._active_connection.cmd_gen.getCmd(
                 self._active_connection.authentication_data,
                 self._active_connection.transport_target,
                 oid
@@ -330,7 +327,7 @@ class SnmpLibrary:
         self._info('Setting OID %s to %s' % (self._format_oid(oid), value))
 
         error_indication, error, _, var = \
-            cmdgen.CommandGenerator(self._snmp_engine).setCmd(
+            self._active_connection.cmd_gen.setCmd(
                 self._active_connection.authentication_data,
                 self._active_connection.transport_target,
                 (oid, value)
@@ -351,7 +348,7 @@ class SnmpLibrary:
         oid =  self._parse_oid(oid)
 
         error_indication, error, _, var_bind_table = \
-            cmdgen.CommandGenerator(self._snmp_engine).nextCmd (
+            self._active_connection.cmd_gen.nextCmd(
                 self._active_connection.authentication_data,
                 self._active_connection.transport_target,
                 oid
