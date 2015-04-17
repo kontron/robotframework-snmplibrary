@@ -117,7 +117,7 @@ class SnmpLibrary:
                 'SHA': cmdgen.usmHMACSHAAuthProtocol
             }[authentication_protocol]
         except KeyError:
-            raise ValueError('Invalid authentication protocol %s' %
+            raise RuntimeError('Invalid authentication protocol %s' %
                                                     authentication_protocol)
 
         try:
@@ -130,7 +130,7 @@ class SnmpLibrary:
                 'AES256': cmdgen.usmAesCfb256Protocol,
             }[encryption_protocol]
         except KeyError:
-            raise ValueError('Invalid encryption protocol %s' %
+            raise RuntimeError('Invalid encryption protocol %s' %
                                                     encryption_protocol)
 
         authentication_data = cmdgen.UsmUserData(
