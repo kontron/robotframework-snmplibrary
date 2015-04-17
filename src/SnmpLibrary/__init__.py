@@ -110,6 +110,9 @@ class SnmpLibrary:
         if alias:
             alias = str(alias)
 
+        if authentication_protocol is not None:
+            authentication_protocol = authentication_protocol.upper()
+
         try:
             authentication_protocol = {
                 None: cmdgen.usmNoAuthProtocol,
@@ -119,6 +122,9 @@ class SnmpLibrary:
         except KeyError:
             raise RuntimeError('Invalid authentication protocol %s' %
                                                     authentication_protocol)
+
+        if encryption_protocol is not None:
+            encryption_protocol = encryption_protocol.upper()
 
         try:
             encryption_protocol = {
