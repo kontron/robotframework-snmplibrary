@@ -388,7 +388,7 @@ class SnmpLibrary:
         """Return the first OID that matches a value in a list
         """
 
-        if self._active_connection.prefetched_table[oid]:
+        if self._active_connection.prefetched_table.has_key(oid):
             oids = self._active_connection.prefetched_table[oid]
         else:
             oids = self.walk(oid)
