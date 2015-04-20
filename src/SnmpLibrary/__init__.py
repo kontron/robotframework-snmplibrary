@@ -35,6 +35,8 @@ class _SnmpConnection:
         self.authentication_data = authentication
         self.transport_target = transport_target
 
+        self.prefetched_table = {}
+
     def close(self):
         # nothing to do atm
         pass
@@ -372,11 +374,24 @@ class SnmpLibrary:
 
         return oids
 
+    def prefetch_oid_table(self, oid):
+        """Prefetch the walk result of the given oid.
+
+        The later operation for find_oid_by_value will be done on the stored
+        oid list.
+        """
+
+        oids = self.walk(oid)
+        self._active_connection.prefetched_table[oid] = oids
+
     def find_oid_by_value(self, oid, value, strip=False):
         """Return the first OID that matches a value in a list
         """
 
-        oids = self.walk(oid)
+        if self._active_connection.prefetched_table[oid]:
+            oids = self._active_connection.prefetched_table[oid]
+        else:
+            oids = self.walk(oid)
 
         for oid in oids:
             s = str(oid[1])
