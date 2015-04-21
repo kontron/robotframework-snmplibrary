@@ -56,9 +56,9 @@ class SnmpLibrary:
         self._active_connection = None
         self._cache = ConnectionCache()
 
-    def open_snmp_connection(self, host, community_string=None, port=161,
+    def open_snmp_v2c_connection(self, host, community_string=None, port=161,
             alias=None):
-        """Opens a new Snmp Connection to the given host.
+        """Opens a new SNMP v2c connection to the given host.
 
         Set `community_string` that is used for this connection.
 
@@ -83,6 +83,9 @@ class SnmpLibrary:
         self._active_connection = connection
 
         return self._cache.register(self._active_connection, alias)
+
+    # backwards compatibility, will be removed soon
+    open_snmp_connection = open_snmp_v2c_connection
 
     def open_snmp_v3_connection(self, host, user, password='',
             encryption_password=None, authentication_protocol=None,
