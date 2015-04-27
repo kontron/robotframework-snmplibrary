@@ -98,7 +98,7 @@ class _Traps:
                 oid=self._parse_oid(oid))
         self._trap_filters[name] = trap_filter
 
-    def wait_until_snmp_trap_is_received(self, trap_filter_name, timeout=5.0,
+    def wait_until_trap_is_received(self, trap_filter_name, timeout=5.0,
             host='0.0.0.0', port=1620):
         """Wait until the first matching trap is received."""
         if trap_filter_name not in self._trap_filters:
