@@ -25,6 +25,8 @@ with warnings.catch_warnings():
     from pyasn1.type import univ
     from pysnmp.proto import rfc1902
 
+from .traps import _Traps
+
 class _SnmpConnection:
 
     def __init__(self, authentication, transport_target):
@@ -47,12 +49,13 @@ def try_int(i):
     except ValueError:
         return i
 
-class SnmpLibrary:
+class SnmpLibrary(_Traps):
     AGENT_NAME = 'robotframework agent'
     ROBOT_LIBRARY_VERSION = '0.0.1'
     ROBOT_LIBRARY_SCOPE = 'TEST SUITE'
 
     def __init__(self):
+        _Traps.__init__(self)
         self._active_connection = None
         self._cache = ConnectionCache()
 
