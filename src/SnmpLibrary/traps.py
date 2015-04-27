@@ -103,6 +103,8 @@ class _Traps:
         """Wait until the first matching trap is received."""
         if trap_filter_name not in self._trap_filters:
             raise RuntimeError('Trap filter "%s" not found.' % trap_filter_name)
+
         trap_filter = self._trap_filters[trap_filter_name]
+        timeout = utils.timestr_to_secs(timeout)
 
         _trap_receiver(trap_filter, host, port, timeout)
