@@ -264,7 +264,7 @@ class SnmpLibrary(_Traps):
         if self._active_connection is None:
             raise RuntimeError('No transport host set')
 
-        idx = self.convert_idx_to_tuple(idx)
+        idx = self._convert_idx_to_tuple(idx)
         oid = self._parse_oid(oid) + idx
 
         error_indication, error, _, var = \
@@ -336,7 +336,7 @@ class SnmpLibrary(_Traps):
         if self._active_connection is None:
             raise RuntimeError('No transport host set')
 
-        idx = self.convert_idx_to_tuple(idx)
+        idx = self._convert_idx_to_tuple(idx)
         oid = self._parse_oid(oid) + idx
         self._info('Setting OID %s to %s' % (self._format_oid(oid), value))
 
@@ -620,7 +620,7 @@ class SnmpLibrary(_Traps):
             return False
         raise RuntimeError("Invalid log level '%s'" % level)
 
-    def convert_idx_to_tuple(self, idx):
+    def _convert_idx_to_tuple(self, idx):
         if isinstance(idx, basestring):
             idx = map(int, idx.split('.'))
         elif isinstance(idx, int):
