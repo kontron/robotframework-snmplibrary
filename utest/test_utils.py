@@ -1,8 +1,8 @@
-from nose.tools import raises
-from SnmpLibrary import utils
+from SnmpLibrary.utils import parse_oid, parse_idx
+from nose.tools import eq_
 
 def test_parse_idx():
-    assert utils.parse_idx('1.2.3') == (1, 2, 3)
-    assert utils.parse_idx(1) == (1,)
-    assert utils.parse_idx([1, 2, 3]) == (1, 2, 3)
-    assert utils.parse_idx((1, '2', 3)) == (1, 2, 3)
+    eq_(parse_idx('1.2.3'), (1, 2, 3))
+    eq_(parse_idx(1), (1,))
+    eq_(parse_idx([1, 2, 3]), (1, 2, 3))
+    eq_(parse_idx((1, '2', 3)), (1, 2, 3))
