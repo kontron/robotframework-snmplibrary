@@ -5,7 +5,7 @@ Introduction
 ------------
 
 SNMPLibrary is a `Robot Framework <http://robotframework.org>`__ test
-library for testing SNMP. It is operating system independent[#os-indep]_.
+library for testing SNMP. It is operating system independent [#os-indep]_.
 
 The library provides the following features:
 
