@@ -629,31 +629,3 @@ class SnmpLibrary(_Traps):
             # Assume interable list
             idx = map(int, idx)
         return tuple(idx)
-
-
-
-
-if __name__ == "__main__":
-    snmp = SnmpLibrary()
-    snmp.set_host('10.0.113.254')
-    snmp.set_community_string('private')
-
-    #snmp.preload_mibs('SNMPv2-MIB')
-    #snmp.load_mibs()
-    #print snmp.get((1,3,6,1,2,1,1,1,0))
-    #print snmp.get((('SNMPv2-MIB', 'sysDescr'), 0))
-    #print snmp.get(('SNMPv2-MIB', ''))
-    #print snmp.get('SNMPv2-MIB::sysDescr.0')
-    #print snmp.get('sysDescr.0')
-    #print snmp.get('.1.3.6.1.2.1.1.1.1')
-    #snmp.set('.iso.org.6.internet.2.1.1.1.0', 'test')
-    #print snmp.get('.1.3.6.1.2.1.1.1.0')
-    #snmp.set('.1.3.6.1.2.1.1.6.0', 'Test')
-    #print snmp.get('SNMPv2-MIB::sysLocation.0')
-    #print snmp.get('KEX-MCG-MIB::clkRefValid.1.1')
-    #print snmp.get('.1.3.6.1.4.1.15000.5.2.1.0')
-    #snmp.set('.1.3.6.1.4.1.15000.5.2.1.0', Gauge32(200))
-    #snmp.set_gauge32('.1.3.6.1.4.1.15000.5.2.1.0', '200')
-    #print snmp.get('.1.3.6.1.4.1.15000.5.2.1.0')
-    print snmp.walk('.1.3.6.1.4.1.9.5.1.4.1.1')
-
