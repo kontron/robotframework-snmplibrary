@@ -16,6 +16,7 @@ import os.path
 import warnings
 from itertools import islice, izip
 from robot.utils.connectioncache import ConnectionCache
+import utils
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -42,57 +43,6 @@ class _SnmpConnection:
     def close(self):
         # nothing to do atm
         pass
-
-def try_int(i):
-    try:
-        return int(i)
-    except ValueError:
-        return i
-
-# Interpret a string as OID. The following notations are possible:
-#   SNMPv2-MIB::sysDescr.0
-#   .1.3.6.1.2.1.1.1.0
-#   .iso.org.6.internet.2.1.1.1.0
-#   sysDescr.0
-def parse_oid(oid):
-    if not isinstance(oid, basestring):
-        return oid
-    elif '::' in oid:
-        mib, sym = oid.split('::', 1)
-        oid = None
-    elif oid.startswith('.'):
-        oid = map(try_int, oid[1:].split('.'))
-        oid = tuple(oid)
-    else:
-        mib = ''
-        sym = oid
-        oid = None
-
-    if oid is None:
-        sym, suffixes = sym.split('.', 1)
-        suffixes = suffixes.split('.')
-        suffixes = map(try_int, suffixes)
-        suffixes = tuple(suffixes)
-        oid = ((mib, sym),) + suffixes
-
-    return oid
-
-def format_oid(oid):
-    return '.' + '.'.join(map(str, oid))
-
-# Interpret a string as an SNMP index. The following values are parsed:
-#  '1.2.3.4' -> (1,2,3,4)
-#  ('1', '2', '3') -> (1, 2, 3)
-#  1 -> (1,)
-def parse_idx(idx):
-    if isinstance(idx, basestring):
-        idx = map(int, idx.split('.'))
-    elif isinstance(idx, int):
-        idx = idx,
-    else:
-        # Assume interable list
-        idx = map(int, idx)
-    return tuple(idx)
 
 class SnmpLibrary(_Traps):
     AGENT_NAME = 'robotframework agent'
@@ -278,8 +228,8 @@ class SnmpLibrary(_Traps):
         if self._active_connection is None:
             raise RuntimeError('No transport host set')
 
-        idx = parse_idx(idx)
-        oid = parse_oid(oid) + idx
+        idx = utils.parse_idx(idx)
+        oid = utils.parse_oid(oid) + idx
 
         error_indication, error, _, var = \
             self._active_connection.cmd_gen.getCmd(
@@ -297,7 +247,7 @@ class SnmpLibrary(_Traps):
 
         if obj == univ.Null(''):
             raise RuntimeError('Object with OID %s not found' %
-                    format_oid(oid))
+                    utils.format_oid(oid))
 
         if expect_display_string:
             if not univ.OctetString().isSuperTypeOf(obj):
@@ -308,7 +258,7 @@ class SnmpLibrary(_Traps):
         else:
             value = obj.prettyOut(obj)
 
-        self._info('OID %s has value %s' % (format_oid(oid), value))
+        self._info('OID %s has value %s' % (utils.format_oid(oid), value))
 
         return value
 
@@ -350,9 +300,9 @@ class SnmpLibrary(_Traps):
         if self._active_connection is None:
             raise RuntimeError('No transport host set')
 
-        idx = parse_idx(idx)
-        oid = parse_oid(oid) + idx
-        self._info('Setting OID %s to %s' % (format_oid(oid), value))
+        idx = utils.parse_idx(idx)
+        oid = utils.parse_oid(oid) + idx
+        self._info('Setting OID %s to %s' % (utils.format_oid(oid), value))
 
         error_indication, error, _, var = \
             self._active_connection.cmd_gen.setCmd(
@@ -373,7 +323,7 @@ class SnmpLibrary(_Traps):
         if self._active_connection is None:
             raise RuntimeError('No transport host set')
 
-        oid = parse_oid(oid)
+        oid = utils.parse_oid(oid)
 
         error_indication, error, _, var_bind_table = \
             self._active_connection.cmd_gen.nextCmd(
@@ -485,7 +435,7 @@ class SnmpLibrary(_Traps):
         """
 
         length = int(length)
-        oid = parse_oid(oid)
+        oid = utils.parse_oid(oid)
 
         if length == 1:
             return oid[-1]
