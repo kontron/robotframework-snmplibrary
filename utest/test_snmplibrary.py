@@ -54,27 +54,3 @@ def test_snmplibrary_find_index_ambiguous_match():
     s = SnmpLibrary()
     s.find_index(1, a, '1', b, '0/10')
 
-
-def test_convert_idx_to_tuple():
-
-    s = SnmpLibrary()
-
-    idx = "10.20.30"
-    t = s.convert_idx_to_tuple(idx)
-    assert isinstance(t, tuple)
-    assert t == (10, 20, 30)
-
-    idx = 10
-    t = s.convert_idx_to_tuple(idx)
-    assert isinstance(t, tuple)
-    assert t == (10,)
-
-    idx = [10, 20, 30]
-    t = s.convert_idx_to_tuple(idx)
-    assert isinstance(t, tuple)
-    assert t == (10, 20, 30)
-
-    idx = (10, 20, 30)
-    t = s.convert_idx_to_tuple(idx)
-    assert isinstance(t, tuple)
-    assert t == (10, 20, 30)
