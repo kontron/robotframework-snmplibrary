@@ -16,7 +16,6 @@ import os.path
 import warnings
 from itertools import islice, izip
 from robot.utils.connectioncache import ConnectionCache
-import utils
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -27,6 +26,7 @@ with warnings.catch_warnings():
     from pysnmp.proto import rfc1902
 
 from .traps import _Traps
+from . import utils
 
 class _SnmpConnection:
 

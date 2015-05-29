@@ -16,7 +16,7 @@ import time
 import warnings
 import functools
 
-from robot import utils
+import robot.utils
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -24,6 +24,8 @@ with warnings.catch_warnings():
     from pysnmp.carrier.asynsock.dgram import udp
     from pysnmp.proto.api import decodeMessageVersion, v2c, protoVersion2c
     from pyasn1.codec.ber import decoder
+
+from . import utils
 
 class StopListener(Exception): pass
 
@@ -46,7 +48,7 @@ def _trap_receiver(trap_filter, host, port, timeout):
     def _trap_timer_cb(now):
         if now - started > timeout:
             raise AssertionError('No matching trap received in %s.' %
-                    utils.secs_to_timestr(timeout))
+                    robot.utils.secs_to_timestr(timeout))
     def _trap_receiver_cb(transport, domain, sock, msg):
         if decodeMessageVersion(msg) != protoVersion2c:
             raise RuntimeError('Only SNMP v2c traps are supported.')
@@ -95,7 +97,7 @@ class _Traps:
         """
         trap_filter = functools.partial(_generic_trap_filter,
                 host=host,
-                oid=self._parse_oid(oid))
+                oid=utils.parse_oid(oid))
         self._trap_filters[name] = trap_filter
 
     def wait_until_trap_is_received(self, trap_filter_name, timeout=5.0,
@@ -105,6 +107,6 @@ class _Traps:
             raise RuntimeError('Trap filter "%s" not found.' % trap_filter_name)
 
         trap_filter = self._trap_filters[trap_filter_name]
-        timeout = utils.timestr_to_secs(timeout)
+        timeout = robot.utils.timestr_to_secs(timeout)
 
         _trap_receiver(trap_filter, host, port, timeout)
