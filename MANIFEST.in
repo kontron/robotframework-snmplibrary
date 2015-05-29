@@ -1,0 +1,4 @@
+include AUTHORS
+include COPYING
+include README.rst
+recursive-include docs *.html
