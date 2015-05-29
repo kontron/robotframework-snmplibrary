@@ -51,7 +51,10 @@ def main():
             version = version,
             description = 'SNMP Library for Robot Framework',
             long_description = readme,
+            author = 'Michael Walle',
             author_email = 'michael.walle@kontron.com',
+            url = 'https://github.com/kontron/robotframework-snmplibrary',
+            download_url = 'https://pypi.python.org/pypi/robotframework-snmplibrary',
             package_dir = { '' : 'src' },
             license = 'Apache License 2.0',
             classifiers = [
