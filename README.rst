@@ -1,6 +1,8 @@
 SNMPLibrary for Robot Framework
 ===============================
 
+|BuildStatus| |PyPiVersion|
+
 Introduction
 ------------
 
@@ -17,7 +19,9 @@ The library provides the following features:
 Installation
 ------------
 
-TDB
+The simplest method to install, is to use pip::
+
+  pip install robotframework-snmplibrary
 
 Documentation
 -------------
@@ -28,3 +32,8 @@ http://kontron.github.io/robotframework-snmplibrary/SnmpLibrary.html
 .. [#os-indep] At the moment it is only developed and tested on linux
                hosts, but should also work on windows and other operating
                systems.
+
+.. |BuildStatus| image:: https://travis-ci.org/kontron/robotframework-aardvarklibrary.png?branch=master
+                 :target: https://travis-ci.org/kontron/robotframework-aardvarklibrary
+.. |PyPiVersion| image:: https://badge.fury.io/py/robotframework-snmplibrary.svg
+                 :target: http://badge.fury.io/py/robotframework-snmplibrary
