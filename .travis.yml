@@ -22,7 +22,7 @@ deploy:
   provider: pypi
   user: mwalle
   password:
-    secure: V/baVTBYIywdSq6USeatQQithUUeP+LgEPqMimvlS46NCyOqP63IzkfoXJmSofCRhUj4XBkauGm6xqLNho3BcsAtGxRXfx27TxEZm3IdmC4O6hHOBBC13zpqVoDy7qeonSsmXJog9f+RZcRTtmTVvQBQ6jBaZB1YR137cp+u438=
+    secure: oyiryGHQlfYeGY0g5OQgh6gHAhmYsxpg8qg4l7C/m0HSGLxg0OQ+tt/UBPFlq2Kp/IVfg5RtwrS1Q8wekoVqsSlFqotSohBMTacXgGURp6u2PYGpp8z994FLzqX+Ub7IqrxyIRDx1gI9fyb4j83S+Z7Bd3gamuj3qv9SfwSoLug=
   on:
     tags: true
     distributions: "release"
