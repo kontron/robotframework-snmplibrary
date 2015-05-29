@@ -22,7 +22,8 @@ TDB
 Documentation
 -------------
 
-TBD
+The most up-to-date keyword documentation can be found at
+http://kontron.github.io/robotframework-snmplibrary/SnmpLibrary.html
 
 .. [#os-indep] At the moment it is only developed and tested on linux
                hosts, but should also work on windows and other operating
