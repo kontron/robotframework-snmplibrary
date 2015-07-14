@@ -56,12 +56,14 @@ class SnmpLibrary(_Traps):
         self._cache = ConnectionCache()
 
     def open_snmp_v2c_connection(self, host, community_string=None, port=161,
-            alias=None):
+            timeout=1, retries=5, alias=None):
         """Opens a new SNMP v2c connection to the given host.
 
         Set `community_string` that is used for this connection.
 
         If no `port` is given, the default port 161 is used.
+
+        The connection `timeout` and `retries` can be configured.
 
         The optional `alias` is a name for the connection and it can be used
         for switching between connections, similarly as the index. See `Switch
@@ -70,13 +72,16 @@ class SnmpLibrary(_Traps):
 
         host = str(host)
         port = int(port)
+        timeout = int(timeout)
+        retries = int(retries)
 
         if alias:
             alias = str(alias)
 
         authentication_data = cmdgen.CommunityData(self.AGENT_NAME,
                                        community_string)
-        transport_target = cmdgen.UdpTransportTarget((host, port))
+        transport_target = cmdgen.UdpTransportTarget(
+                                        (host, port), timeout, retries)
 
         connection = _SnmpConnection(authentication_data, transport_target)
         self._active_connection = connection
@@ -88,7 +93,8 @@ class SnmpLibrary(_Traps):
 
     def open_snmp_v3_connection(self, host, user, password='',
             encryption_password=None, authentication_protocol=None,
-            encryption_protocol=None, port=161, alias=None):
+            encryption_protocol=None, port=161,
+            timeout=1, retries=5, alias=None):
         """Opens a new SNMP v3 Connection to the given host.
 
         If no `port` is given, the default port 161 is used.
@@ -105,6 +111,9 @@ class SnmpLibrary(_Traps):
         host = str(host)
         port = int(port)
         user = str(user)
+        timeout = int(timeout)
+        retries = int(retries)
+
         if password is not None:
             password = str(password)
 
@@ -150,7 +159,8 @@ class SnmpLibrary(_Traps):
                                     authentication_protocol,
                                     encryption_protocol)
 
-        transport_target = cmdgen.UdpTransportTarget((host, port))
+        transport_target = cmdgen.UdpTransportTarget(
+                                        (host, port), timeout, retries)
 
         conn = _SnmpConnection(authentication_data, transport_target)
         self._active_connection = conn
