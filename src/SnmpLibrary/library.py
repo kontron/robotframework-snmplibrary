@@ -56,7 +56,7 @@ class SnmpLibrary(_Traps):
         self._cache = ConnectionCache()
 
     def open_snmp_v2c_connection(self, host, community_string=None, port=161,
-            timeout=1, retries=5, alias=None):
+            timeout=1.0, retries=5, alias=None):
         """Opens a new SNMP v2c connection to the given host.
 
         Set `community_string` that is used for this connection.
@@ -72,7 +72,7 @@ class SnmpLibrary(_Traps):
 
         host = str(host)
         port = int(port)
-        timeout = int(timeout)
+        timeout = float(timeout)
         retries = int(retries)
 
         if alias:
@@ -94,7 +94,7 @@ class SnmpLibrary(_Traps):
     def open_snmp_v3_connection(self, host, user, password='',
             encryption_password=None, authentication_protocol=None,
             encryption_protocol=None, port=161,
-            timeout=1, retries=5, alias=None):
+            timeout=1.0, retries=5, alias=None):
         """Opens a new SNMP v3 Connection to the given host.
 
         If no `port` is given, the default port 161 is used.
@@ -111,7 +111,7 @@ class SnmpLibrary(_Traps):
         host = str(host)
         port = int(port)
         user = str(user)
-        timeout = int(timeout)
+        timeout = float(timeout)
         retries = int(retries)
 
         if password is not None:
