@@ -485,6 +485,10 @@ class SnmpLibrary(_Traps):
         """Converts a value to a SNMP TimeTicks object."""
         return rfc1902.TimeTicks(value)
 
+    def convert_to_ipaddress(self, value):
+        """Converts a value to a SNMP IpAddress object."""
+        return rfc1902.IpAddress(value)
+
     def set_octetstring(self, oid, value, idx=(0,)):
         """Does a SNMP SET request after converting the value to an
         OctetString SNMP Object.
@@ -565,6 +569,16 @@ class SnmpLibrary(_Traps):
         """
 
         value = self.convert_to_timeticks(value)
+        self.set(oid, value, idx)
+
+    def set_ipaddress(self, oid, value, idx=(0,)):
+        """Does a SNMP SET request after converting the value to an
+        IpAddress SNMP Object.
+
+        See also `Set Integer`.
+        """
+
+        value = self.convert_to_ipaddress(value)
         self.set(oid, value, idx)
 
     def _warn(self, msg):
