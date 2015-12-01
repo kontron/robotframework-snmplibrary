@@ -489,6 +489,9 @@ class SnmpLibrary(_Traps):
 
     def convert_to_ipaddress(self, value):
         """Converts a value to a SNMP IpAddress object."""
+        # Unfortunately, pysnmp does not support unicode strings
+        if isinstance(value, unicode):
+            value = str(value)
         return rfc1902.IpAddress(value)
 
     def set_octetstring(self, oid, value, idx=(0,)):
