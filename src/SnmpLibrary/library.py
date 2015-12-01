@@ -294,6 +294,22 @@ class SnmpLibrary(_Traps):
         """
         return self._get(oid, idx, expect_display_string=True)
 
+    def _set(self, *oid_values):
+        for oid, value in oid_values:
+            self._info('Setting OID %s to %s' % (utils.format_oid(oid), value))
+
+        error_indication, error, _, var = \
+            self._active_connection.cmd_gen.setCmd(
+                self._active_connection.authentication_data,
+                self._active_connection.transport_target,
+                *oid_values
+        )
+
+        if error_indication is not None:
+            raise RuntimeError('SNMP SET failed: %s' % error_indication)
+        if error != 0:
+            raise RuntimeError('SNMP SET failed: %s' % error.prettyPrint())
+
     def set(self, oid, value, idx=(0,)):
         """Does a SNMP SET request.
 
@@ -315,19 +331,46 @@ class SnmpLibrary(_Traps):
 
         idx = utils.parse_idx(idx)
         oid = utils.parse_oid(oid) + idx
-        self._info('Setting OID %s to %s' % (utils.format_oid(oid), value))
+        self._set((oid, value))
 
-        error_indication, error, _, var = \
-            self._active_connection.cmd_gen.setCmd(
-                self._active_connection.authentication_data,
-                self._active_connection.transport_target,
-                (oid, value)
-        )
+    def set_many(self, *oid_value_pairs):
+        """ Does a SNMP SET request with multiple values.
 
-        if error_indication is not None:
-            raise RuntimeError('SNMP SET failed: %s' % error_indication)
-        if error != 0:
-            raise RuntimeError('SNMP SET failed: %s' % error.prettyPrint())
+        Set one or more values simultaneously. See `Set` for more information
+        about the OID and possible value. After each value, you can give an
+        index (`idx`, see example below) which is appended to the OIDs. By
+        default the index is `.0`.
+
+        Examples:
+        | Set Many | SNMPv2::sysDescr | New System Description | |
+        | ...      | SNMPv2-MIB::sysName | New System Name | |
+        | Set Many | IF-MIB::ifDescr | IF1 Description | idx=1 |
+        | ...      | IF-MIB::ifDescr | IF2 Description | idx=2 |
+        """
+
+        if self._active_connection is None:
+            raise RuntimeError('No transport host set')
+
+        args = list(oid_value_pairs)
+        oid_values = list()
+        try:
+            while len(args):
+                oid = args.pop(0)
+                value = args.pop(0)
+                possible_idx = args[0] if len(args) > 0 else ''
+                if possible_idx.startswith('idx='):
+                    idx = args.pop(0)[4:]
+                else:
+                    idx = (0,)
+                idx = utils.parse_idx(idx)
+                oid = utils.parse_oid(oid) + idx
+                oid_values.append((oid, value))
+        except IndexError:
+            raise RuntimeError('Invalid OID/value(/index) format')
+        if len(oid_values) < 1:
+            raise RuntimeError('You must specify at least one OID/value pair')
+
+        self._set(*oid_values)
 
     def walk(self, oid):
         """Does a SNMP WALK request and returns the result as OID list.
