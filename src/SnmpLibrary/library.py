@@ -304,8 +304,10 @@ class SnmpLibrary(_Traps):
         want to use an OID which is not described by a MIB, you'll have to use
         the `Set XXX`-keyword or `Convert To XXX`-keyword.
 
+        The optional `idx` is appended to the OID (defaults to `.0`).
+
         Example:
-        | Set | SNMPv2::sysDescr.0 | New System Description |
+        | Set | SNMPv2::sysDescr | New System Description |
         """
 
         if self._active_connection is None:
