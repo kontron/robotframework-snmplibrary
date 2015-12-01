@@ -276,14 +276,15 @@ class SnmpLibrary(_Traps):
     def get(self, oid, idx=(0,)):
         """Does a SNMP GET request for the specified 'oid'.
 
-        'idx' can be specified as tuple or as string.
+        The optional `idx` can be specified as tuple or as a string and
+        defaults to `.0`.
 
         Examples:
-        | ${value}=  | Get | SNMPv2-MIB::sysDescr.0 |
-        | ${value}=  | Get | .1.3.6.1.2.1.1.1.0 |
-        | ${value}=  | Get | .iso.org.6.internet.2.1.1.1.0 |
-        | ${value}=  | Get | sysDescr.0 |
-        | ${value}=  | Get | sysDescr.0 | 6
+        | ${value}=  | Get | SNMPv2-MIB::sysDescr | |
+        | ${value}=  | Get | .1.3.6.1.2.1.1.1 | |
+        | ${value}=  | Get | .iso.org.6.internet.2.1.1.1 | |
+        | ${value}=  | Get | sysDescr | |
+        | ${value}=  | Get | ifDescr | 2 |
         """
         return self._get(oid, idx)
 
@@ -373,8 +374,7 @@ class SnmpLibrary(_Traps):
         self._set(*oid_values)
 
     def walk(self, oid):
-        """Does a SNMP WALK request and returns the result as OID list.
-        """
+        """Does a SNMP WALK request and returns the result as OID list."""
 
         if self._active_connection is None:
             raise RuntimeError('No transport host set')
@@ -403,16 +403,15 @@ class SnmpLibrary(_Traps):
     def prefetch_oid_table(self, oid):
         """Prefetch the walk result of the given oid.
 
-        The later operation for find_oid_by_value will be done on the stored
-        oid list.
+        Subsequent calls to the `Find OID By Value` keyword will use the
+        prefetched result.
         """
 
         oids = self.walk(oid)
         self._active_connection.prefetched_table[oid] = oids
 
     def find_oid_by_value(self, oid, value, strip=False):
-        """Return the first OID that matches a value in a list
-        """
+        """Return the first OID that matches a value in a list."""
 
         if self._active_connection.prefetched_table.has_key(oid):
             oids = self._active_connection.prefetched_table[oid]
@@ -426,7 +425,7 @@ class SnmpLibrary(_Traps):
             if s == str(value):
                 return oid[0]
 
-        raise RuntimeError('value=%s not found' % value)
+        raise RuntimeError('Value "%s" not found.' % value)
 
     def find_index(self, index_length, *args):
         """Searches an index in given datasets.
@@ -448,9 +447,9 @@ class SnmpLibrary(_Traps):
         | ${idx}= | Find Index | 1 | ${a} | 2 | ${b} | 3 |
         | ${valueOfD}= | Get | ${oidOfD} | index=${idx} | | | |
 
-        The index_length parameter is the length of the part of the OID which
+        The `index_length` parameter is the length of the part of the OID which
         denotes the index. Eg. if you have an OID .1.3.6.1.4.1234.1.2.3 and
-        index_length is 2, the index would be (2,3).
+        `index_length` is 2, the index would be (2,3).
         """
         if len(args) % 2 != 0:
             raise RuntimeError('Called with an invalid amount of arguments')
@@ -483,11 +482,11 @@ class SnmpLibrary(_Traps):
     def get_index_from_oid(self, oid, length=1):
         """Return last part of oid.
 
-        If length is 1 only one element is returned.
-        Otherwise a tuple is returened.
+        If length is 1 an integer is returned. Otherwise a tuple of integers is
+        returened.
 
         Example:
-        |${val}=  | Get Index From OID | 1.3.6.1.2.1.2.2.1.2.10102 | 1 |
+        | ${val}= | Get Index From OID | 1.3.6.1.2.1.2.2.1.2.10102 | 1 |
         """
 
         length = int(length)
@@ -666,4 +665,3 @@ class SnmpLibrary(_Traps):
         if not raise_if_invalid:
             return False
         raise RuntimeError("Invalid log level '%s'" % level)
-
