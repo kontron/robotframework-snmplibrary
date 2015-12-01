@@ -488,7 +488,10 @@ class SnmpLibrary(_Traps):
         return rfc1902.TimeTicks(value)
 
     def convert_to_ipaddress(self, value):
-        """Converts a value to a SNMP IpAddress object."""
+        """Converts a value to a SNMP IpAddress object.
+
+        See `Set IP Address` for formats which are accepted for value.
+        """
         # Unfortunately, pysnmp does not support unicode strings
         if isinstance(value, unicode):
             value = str(value)
@@ -580,7 +583,15 @@ class SnmpLibrary(_Traps):
         """Does a SNMP SET request after converting the value to an
         IpAddress SNMP Object.
 
+        The `value` can either be a string (dotted IPv4 address) or an
+        iterable.
+
         See also `Set Integer`.
+
+        Examples:
+        | Set IP Address | ${oid} | 172.16.0.1 | | | |
+        | ${myIp}= | Create List | ${172} | ${16} | ${0} | ${1} |
+        | Set IP Address | ${oid} | ${myIp} | | | |
         """
 
         value = self.convert_to_ipaddress(value)
