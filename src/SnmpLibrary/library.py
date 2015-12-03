@@ -397,7 +397,12 @@ class SnmpLibrary(_Traps):
         oids = list()
         for var_bind_table_row in var_bind_table:
             oid, obj = var_bind_table_row[0]
-            oids.append((oid, obj.prettyOut(obj)))
+            oid = ''.join(('.', str(oid)))
+            if univ.ObjectIdentifier().isSuperTypeOf(obj):
+                obj = ''.join(('.', str(obj)))
+            else:
+                obj = obj.prettyOut(obj)
+            oids.append((oid, obj))
 
         return oids
 
