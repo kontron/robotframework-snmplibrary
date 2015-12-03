@@ -541,7 +541,7 @@ class SnmpLibrary(_Traps):
         See `Set IP Address` for formats which are accepted for value.
         """
         # Unfortunately, pysnmp does not support unicode strings
-        if isinstance(value, unicode):
+        if isinstance(value, basestring):
             value = str(value)
         return rfc1902.IpAddress(value)
 
