@@ -289,7 +289,8 @@ class SnmpLibrary(_Traps):
         return self._get(oid, idx)
 
     def get_display_string(self, oid, idx=(0,)):
-        """Does a SNMP GET request for the specified 'oid'.
+        """Does a SNMP GET request for the specified 'oid' and convert it to
+        display string.
 
         For more information and an example see `Get`.
         """
