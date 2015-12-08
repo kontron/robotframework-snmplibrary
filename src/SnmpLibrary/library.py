@@ -380,6 +380,7 @@ class SnmpLibrary(_Traps):
         if self._active_connection is None:
             raise RuntimeError('No transport host set')
 
+        self._info('Walk starts at OID %s' % (oid, ))
         oid = utils.parse_oid(oid)
 
         error_indication, error, _, var_bind_table = \
@@ -402,6 +403,7 @@ class SnmpLibrary(_Traps):
                 obj = ''.join(('.', str(obj)))
             else:
                 obj = obj.prettyOut(obj)
+            self._info('%s: %s' % (oid, obj))
             oids.append((oid, obj))
 
         return oids
