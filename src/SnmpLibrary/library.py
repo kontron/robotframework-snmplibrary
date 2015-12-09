@@ -471,7 +471,7 @@ class SnmpLibrary(_Traps):
             d = filter(lambda x: x[1] == e[1], e[0])
 
             # we only need the index part of the oid
-            d = map(lambda x: (x[0][-int(index_length):]), d)
+            d = map(lambda x: (utils.parse_oid(x[0])[-int(index_length):]), d)
 
             # now convert the list of indices to a set
             d = set(d)
