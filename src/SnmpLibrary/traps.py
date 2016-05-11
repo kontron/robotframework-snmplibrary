@@ -40,15 +40,16 @@ def _generic_trap_filter(domain, sock, pdu, **kwargs):
             if oid == snmpTrapOID:
                 if val[0][0][2] != v2c.ObjectIdentifier(kwargs['oid']):
                     return False
-
     return True
 
 def _trap_receiver(trap_filter, host, port, timeout):
     started = time.time()
+
     def _trap_timer_cb(now):
         if now - started > timeout:
             raise AssertionError('No matching trap received in %s.' %
                     robot.utils.secs_to_timestr(timeout))
+
     def _trap_receiver_cb(transport, domain, sock, msg):
         if decodeMessageVersion(msg) != protoVersion2c:
             raise RuntimeError('Only SNMP v2c traps are supported.')
@@ -61,12 +62,7 @@ def _trap_receiver(trap_filter, host, port, timeout):
             return
 
         if trap_filter(domain, sock, pdu):
-            raise StopListener()
-
-
-        # Stop the receiver if the trap we are looking for was received.
-        if False:
-            raise StopListener()
+            transport.jobFinished(1)
 
     dispatcher = AsynsockDispatcher()
     dispatcher.registerRecvCbFun(_trap_receiver_cb)
