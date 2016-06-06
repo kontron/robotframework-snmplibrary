@@ -256,9 +256,10 @@ class SnmpLibrary(_Traps):
 
         oid, obj = var[0]
 
-        if obj == univ.Null(''):
-            raise RuntimeError('Object with OID %s not found' %
-                    utils.format_oid(oid))
+        # what about return values of empty string
+#        if obj == univ.Null('')
+#            raise RuntimeError('Object with OID %s not found' %
+#                    utils.format_oid(oid))
 
         if expect_display_string:
             if not univ.OctetString().isSuperTypeOf(obj):
