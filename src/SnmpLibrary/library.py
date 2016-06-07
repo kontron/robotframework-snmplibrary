@@ -23,7 +23,7 @@ with warnings.catch_warnings():
     from pysnmp.entity import engine, config
     from pysnmp.entity.rfc3413.oneliner import cmdgen
     from pyasn1.type import univ
-    from pysnmp.proto import rfc1902
+    from pysnmp.proto import rfc1902, rfc1905
 
 from .traps import _Traps
 from . import utils
@@ -256,10 +256,9 @@ class SnmpLibrary(_Traps):
 
         oid, obj = var[0]
 
-        # what about return values of empty string
-#        if obj == univ.Null('')
-#            raise RuntimeError('Object with OID %s not found' %
-#                    utils.format_oid(oid))
+        if isinstance(obj, rfc1905.NoSuchInstance):
+            raise RuntimeError('Object with OID %s not found' %
+                    utils.format_oid(oid))
 
         if expect_display_string:
             if not univ.OctetString().isSuperTypeOf(obj):
