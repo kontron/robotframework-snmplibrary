@@ -27,11 +27,9 @@ with warnings.catch_warnings():
 
 from . import utils
 
-class StopListener(Exception): pass
-
 def _generic_trap_filter(domain, sock, pdu, **kwargs):
     snmpTrapOID = (1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0)
-    if 'host' in kwargs and kwargs['oid']:
+    if 'host' in kwargs and kwargs['host']:
         if sock[0] != kwargs['host']:
             return False
 
@@ -61,6 +59,7 @@ def _trap_receiver(trap_filter, host, port, timeout):
         if not pdu.isSameTypeWith(v2c.TrapPDU()):
             return
 
+        # Stop the receiver if the trap we are looking for was received.
         if trap_filter(domain, sock, pdu):
             transport.jobFinished(1)
 
@@ -76,8 +75,6 @@ def _trap_receiver(trap_filter, host, port, timeout):
 
     try:
         dispatcher.runDispatcher()
-    except StopListener:
-        pass
     finally:
         dispatcher.closeDispatcher()
 
