@@ -399,7 +399,7 @@ class SnmpLibrary(_Traps):
         for var_bind_table_row in var_bind_table:
             oid, obj = var_bind_table_row[0]
             oid = ''.join(('.', str(oid)))
-            if univ.ObjectIdentifier().isSuperTypeOf(obj):
+            if obj.isSuperTypeOf(rfc1902.ObjectIdentifier()):
                 obj = ''.join(('.', str(obj)))
             else:
                 obj = obj.prettyOut(obj)
