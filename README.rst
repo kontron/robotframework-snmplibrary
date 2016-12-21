@@ -62,7 +62,7 @@ limitations under the License.
                hosts, but should also work on windows and other operating
                systems.
 
-.. |BuildStatus| image:: https://travis-ci.org/kontron/robotframework-aardvarklibrary.png?branch=master
-                 :target: https://travis-ci.org/kontron/robotframework-aardvarklibrary
+.. |BuildStatus| image:: https://travis-ci.org/kontron/robotframework-snmplibrary.png?branch=master
+                 :target: https://travis-ci.org/kontron/robotframework-snmplibrary
 .. |PyPiVersion| image:: https://badge.fury.io/py/robotframework-snmplibrary.svg
                  :target: http://badge.fury.io/py/robotframework-snmplibrary
