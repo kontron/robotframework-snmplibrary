@@ -55,6 +55,39 @@ class SnmpLibrary(_Traps):
         self._active_connection = None
         self._cache = ConnectionCache()
 
+    def open_snmp_v1_connection(self, host, community_string=None, port=161,
+            timeout=1.0, retries=5, alias=None):
+        """Opens a new SNMP v1 connection to the given host.
+
+        Set `community_string` that is used for this connection.
+
+        If no `port` is given, the default port 161 is used.
+
+        The connection `timeout` and `retries` can be configured.
+
+        The optional `alias` is a name for the connection and it can be used
+        for switching between connections, similarly as the index. See `Switch
+        Connection` for more details about that.
+        """
+
+        host = str(host)
+        port = int(port)
+        timeout = float(timeout)
+        retries = int(retries)
+
+        if alias:
+            alias = str(alias)
+
+        authentication_data = cmdgen.CommunityData(self.AGENT_NAME,
+                                       community_string, mpModel=0)
+        transport_target = cmdgen.UdpTransportTarget(
+                                        (host, port), timeout, retries)
+
+        connection = _SnmpConnection(authentication_data, transport_target)
+        self._active_connection = connection
+
+        return self._cache.register(self._active_connection, alias)
+
     def open_snmp_v2c_connection(self, host, community_string=None, port=161,
             timeout=1.0, retries=5, alias=None):
         """Opens a new SNMP v2c connection to the given host.
