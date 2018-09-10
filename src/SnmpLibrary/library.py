@@ -471,10 +471,10 @@ class SnmpLibrary(_Traps):
         l = list()
         for e in zip(data, match):
             # match our desired value
-            d = filter(lambda x: x[1] == e[1], e[0])
+            d = [x for x in e[0] if x[1] == e[1]]
 
             # we only need the index part of the oid
-            d = map(lambda x: (utils.parse_oid(x[0])[-int(index_length):]), d)
+            d = [(utils.parse_oid(x[0])[-int(index_length):]) for x in d]
 
             # now convert the list of indices to a set
             d = set(d)
