@@ -27,6 +27,7 @@ with warnings.catch_warnings():
 
 from . import utils
 
+
 def _generic_trap_filter(domain, sock, pdu, **kwargs):
     snmpTrapOID = (1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0)
     if 'host' in kwargs and kwargs['host']:
@@ -40,13 +41,14 @@ def _generic_trap_filter(domain, sock, pdu, **kwargs):
                     return False
     return True
 
+
 def _trap_receiver(trap_filter, host, port, timeout):
     started = time.time()
 
     def _trap_timer_cb(now):
         if now - started > timeout:
             raise AssertionError('No matching trap received in %s.' %
-                    robot.utils.secs_to_timestr(timeout))
+                                 robot.utils.secs_to_timestr(timeout))
 
     def _trap_receiver_cb(transport, domain, sock, msg):
         if decodeMessageVersion(msg) != protoVersion2c:
@@ -78,6 +80,7 @@ def _trap_receiver(trap_filter, host, port, timeout):
     finally:
         dispatcher.closeDispatcher()
 
+
 class _Traps:
     def __init__(self):
         self._trap_filters = dict()
@@ -89,12 +92,12 @@ class _Traps:
         OID.
         """
         trap_filter = functools.partial(_generic_trap_filter,
-                host=host,
-                oid=utils.parse_oid(oid))
+                                        host=host,
+                                        oid=utils.parse_oid(oid))
         self._trap_filters[name] = trap_filter
 
     def wait_until_trap_is_received(self, trap_filter_name, timeout=5.0,
-            host='0.0.0.0', port=1620):
+                                    host='0.0.0.0', port=1620):
         """Wait until the first matching trap is received."""
         if trap_filter_name not in self._trap_filters:
             raise RuntimeError('Trap filter "%s" not found.' % trap_filter_name)

@@ -7,7 +7,7 @@ import subprocess
 sys.path.insert(0, 'src')
 
 version_py = os.path.join(os.path.dirname(__file__), 'src', 'SnmpLibrary',
-        'version.py')
+                          'version.py')
 try:
     version = subprocess.check_output(
             ['git', 'describe', '--tags', '--always', '--dirty'],
@@ -26,6 +26,7 @@ except (OSError, IOError, subprocess.CalledProcessError) as e:
 
 with open('README.rst') as f:
         readme = f.read()
+
 
 class run_build_libdoc(Command):
     description = "Build Robot Framework library documentation"
@@ -46,31 +47,33 @@ class run_build_libdoc(Command):
 
         robot.libdoc.libdoc('SnmpLibrary', 'docs/SnmpLibrary.html')
 
+
 def main():
-    setup(name = 'robotframework-snmplibrary',
-            version = str(version),
-            description = 'SNMP Library for Robot Framework',
-            long_description = readme,
-            author = 'Michael Walle',
-            author_email = 'michael.walle@kontron.com',
-            url = 'https://github.com/kontron/robotframework-snmplibrary',
-            download_url = 'https://pypi.python.org/pypi/robotframework-snmplibrary',
-            package_dir = { '' : 'src' },
-            license = 'Apache License 2.0',
-            classifiers = [
-                'Development Status :: 4 - Beta',
-                'Framework :: Robot Framework',
-                'License :: OSI Approved :: Apache Software License',
-                'Operating System :: OS Independent',
-                'Programming Language :: Python',
-                'Topic :: Software Development :: Testing',
-            ],
-            packages = [ 'SnmpLibrary' ],
-            install_requires = [ 'robotframework', 'pysnmp' ],
-            cmdclass = {
-                'build_libdoc': run_build_libdoc,
-            },
+    setup(name='robotframework-snmplibrary',
+          version=str(version),
+          description='SNMP Library for Robot Framework',
+          long_description=readme,
+          author='Michael Walle',
+          author_email='michael.walle@kontron.com',
+          url='https://github.com/kontron/robotframework-snmplibrary',
+          download_url='https://pypi.python.org/pypi/robotframework-snmplibrary',
+          package_dir={'': 'src'},
+          license='Apache License 2.0',
+          classifiers=[
+              'Development Status :: 4 - Beta',
+              'Framework :: Robot Framework',
+              'License :: OSI Approved :: Apache Software License',
+              'Operating System :: OS Independent',
+              'Programming Language :: Python',
+              'Topic :: Software Development :: Testing',
+          ],
+          packages=['SnmpLibrary'],
+          install_requires=['robotframework', 'pysnmp'],
+          cmdclass={
+              'build_libdoc': run_build_libdoc,
+          },
     )
+
 
 if __name__ == '__main__':
     main()

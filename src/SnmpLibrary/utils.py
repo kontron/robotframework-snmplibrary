@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 def try_int(i):
     try:
         return int(i)
     except ValueError:
         return i
+
 
 # Interpret a string as OID. The following notations are possible:
 #   SNMPv2-MIB::sysDescr.0
@@ -46,8 +48,10 @@ def parse_oid(oid):
 
     return oid
 
+
 def format_oid(oid):
     return '.' + '.'.join(map(str, oid))
+
 
 # Interpret a string as an SNMP index. The following values are parsed:
 #  '1.2.3.4' -> (1,2,3,4)

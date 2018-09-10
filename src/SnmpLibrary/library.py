@@ -17,17 +17,18 @@ import warnings
 from itertools import islice
 from robot.utils.connectioncache import ConnectionCache
 
+from .traps import _Traps
+from . import utils
+from . import __version__
+
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     from pysnmp.smi import builder
-    from pysnmp.entity import engine, config
+    from pysnmp.entity import engine
     from pysnmp.entity.rfc3413.oneliner import cmdgen
     from pyasn1.type import univ
     from pysnmp.proto import rfc1902, rfc1905
 
-from .traps import _Traps
-from . import utils
-from . import __version__
 
 class _SnmpConnection:
 
@@ -45,6 +46,7 @@ class _SnmpConnection:
         # nothing to do atm
         pass
 
+
 class SnmpLibrary(_Traps):
     AGENT_NAME = 'robotframework agent'
     ROBOT_LIBRARY_VERSION = __version__
@@ -56,7 +58,7 @@ class SnmpLibrary(_Traps):
         self._cache = ConnectionCache()
 
     def open_snmp_v2c_connection(self, host, community_string=None, port=161,
-            timeout=1.0, retries=5, alias=None):
+                                 timeout=1.0, retries=5, alias=None):
         """Opens a new SNMP v2c connection to the given host.
 
         Set `community_string` that is used for this connection.
@@ -79,7 +81,7 @@ class SnmpLibrary(_Traps):
             alias = str(alias)
 
         authentication_data = cmdgen.CommunityData(self.AGENT_NAME,
-                                       community_string)
+                                                   community_string)
         transport_target = cmdgen.UdpTransportTarget(
                                         (host, port), timeout, retries)
 
@@ -92,9 +94,10 @@ class SnmpLibrary(_Traps):
     open_snmp_connection = open_snmp_v2c_connection
 
     def open_snmp_v3_connection(self, host, user, password='',
-            encryption_password=None, authentication_protocol=None,
-            encryption_protocol=None, port=161,
-            timeout=1.0, retries=5, alias=None):
+                                encryption_password=None,
+                                authentication_protocol=None,
+                                encryption_protocol=None, port=161,
+                                timeout=1.0, retries=5, alias=None):
         """Opens a new SNMP v3 Connection to the given host.
 
         If no `port` is given, the default port 161 is used.
@@ -134,7 +137,7 @@ class SnmpLibrary(_Traps):
             }[authentication_protocol]
         except KeyError:
             raise RuntimeError('Invalid authentication protocol %s' %
-                                                    authentication_protocol)
+                               authentication_protocol)
 
         if encryption_protocol is not None:
             encryption_protocol = encryption_protocol.upper()
@@ -150,7 +153,7 @@ class SnmpLibrary(_Traps):
             }[encryption_protocol]
         except KeyError:
             raise RuntimeError('Invalid encryption protocol %s' %
-                                                    encryption_protocol)
+                               encryption_protocol)
 
         authentication_data = cmdgen.UsmUserData(
                                     user,
@@ -247,7 +250,7 @@ class SnmpLibrary(_Traps):
                 self._active_connection.authentication_data,
                 self._active_connection.transport_target,
                 oid
-        )
+            )
 
         if error_indication is not None:
             raise RuntimeError('SNMP GET failed: %s' % error_indication)
@@ -258,7 +261,7 @@ class SnmpLibrary(_Traps):
 
         if isinstance(obj, rfc1905.NoSuchInstance):
             raise RuntimeError('Object with OID %s not found' %
-                    utils.format_oid(oid))
+                               utils.format_oid(oid))
 
         if expect_display_string:
             if not univ.OctetString().isSuperTypeOf(obj):
@@ -305,7 +308,7 @@ class SnmpLibrary(_Traps):
                 self._active_connection.authentication_data,
                 self._active_connection.transport_target,
                 *oid_values
-        )
+            )
 
         if error_indication is not None:
             raise RuntimeError('SNMP SET failed: %s' % error_indication)
@@ -388,7 +391,7 @@ class SnmpLibrary(_Traps):
                 self._active_connection.authentication_data,
                 self._active_connection.transport_target,
                 oid
-        )
+            )
 
         if error_indication:
             raise RuntimeError('SNMP WALK failed: %s' % error_indication)
@@ -421,7 +424,7 @@ class SnmpLibrary(_Traps):
     def find_oid_by_value(self, oid, value, strip=False):
         """Return the first OID that matches a value in a list."""
 
-        if self._active_connection.prefetched_table.has_key(oid):
+        if oid in self._active_connection.prefetched_table:
             oids = self._active_connection.prefetched_table[oid]
         else:
             oids = self.walk(oid)
@@ -484,7 +487,7 @@ class SnmpLibrary(_Traps):
             raise RuntimeError('No index found for the given matches')
         if len(s) > 1:
             raise RuntimeError('Ambiguous match. Found %d matching indices' %
-                    len(s))
+                               len(s))
         return s.pop()
 
     def get_index_from_oid(self, oid, length=1):
