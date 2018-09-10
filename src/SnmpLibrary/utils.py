@@ -24,7 +24,7 @@ def try_int(i):
 #   .iso.org.6.internet.2.1.1.1.0
 #   sysDescr.0
 def parse_oid(oid):
-    if not isinstance(oid, basestring):
+    if not isinstance(oid, str):
         return oid
     elif '::' in oid:
         mib, sym = oid.split('::', 1)
@@ -54,7 +54,7 @@ def format_oid(oid):
 #  ('1', '2', '3') -> (1, 2, 3)
 #  1 -> (1,)
 def parse_idx(idx):
-    if isinstance(idx, basestring):
+    if isinstance(idx, str):
         idx = map(int, idx.split('.'))
     elif isinstance(idx, int):
         idx = idx,

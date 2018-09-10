@@ -14,7 +14,7 @@
 
 import os.path
 import warnings
-from itertools import islice, izip
+from itertools import islice
 from robot.utils.connectioncache import ConnectionCache
 
 with warnings.catch_warnings():
@@ -466,7 +466,7 @@ class SnmpLibrary(_Traps):
         match = islice(args, 1, None, 2)
 
         l = list()
-        for e in izip(data, match):
+        for e in zip(data, match):
             # match our desired value
             d = filter(lambda x: x[1] == e[1], e[0])
 
@@ -543,7 +543,7 @@ class SnmpLibrary(_Traps):
         See `Set IP Address` for formats which are accepted for value.
         """
         # Unfortunately, pysnmp does not support unicode strings
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             value = str(value)
         return rfc1902.IpAddress(value)
 
@@ -662,12 +662,12 @@ class SnmpLibrary(_Traps):
         if level is None:
             level = self._default_log_level
         if msg != '':
-            print '*%s* %s' % (level.upper(), msg)
+            print('*%s* %s' % (level.upper(), msg))
 
     def _is_valid_log_level(self, level, raise_if_invalid=False):
         if level is None:
             return True
-        if isinstance(level, basestring) and \
+        if isinstance(level, str) and \
                 level.upper() in ['TRACE', 'DEBUG', 'INFO', 'WARN', 'HTML']:
             return True
         if not raise_if_invalid:
