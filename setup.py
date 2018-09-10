@@ -41,14 +41,14 @@ class run_build_libdoc(Command):
         try:
             import robot.libdoc
         except ImportError:
-            print "build_libdoc requires the Robot Framework package."
+            print("build_libdoc requires the Robot Framework package.")
             sys.exit(-1)
 
         robot.libdoc.libdoc('SnmpLibrary', 'docs/SnmpLibrary.html')
 
 def main():
     setup(name = 'robotframework-snmplibrary',
-            version = version,
+            version = str(version),
             description = 'SNMP Library for Robot Framework',
             long_description = readme,
             author = 'Michael Walle',
