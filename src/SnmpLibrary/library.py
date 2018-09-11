@@ -546,7 +546,7 @@ class SnmpLibrary(_Traps):
         See `Set IP Address` for formats which are accepted for value.
         """
         # Unfortunately, pysnmp does not support unicode strings
-        if isinstance(value, str):
+        if utils.is_string(value):
             value = str(value)
         return rfc1902.IpAddress(value)
 
@@ -670,7 +670,7 @@ class SnmpLibrary(_Traps):
     def _is_valid_log_level(self, level, raise_if_invalid=False):
         if level is None:
             return True
-        if isinstance(level, str) and \
+        if utils.is_string(level) and \
                 level.upper() in ['TRACE', 'DEBUG', 'INFO', 'WARN', 'HTML']:
             return True
         if not raise_if_invalid:

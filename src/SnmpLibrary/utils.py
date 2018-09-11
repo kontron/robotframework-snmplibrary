@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
 
 def try_int(i):
     try:
@@ -20,13 +22,19 @@ def try_int(i):
         return i
 
 
+def is_string(string):
+    if (sys.version_info[0] >= 3):
+        return isinstance(string, str)
+    return isinstance(string, basestring)
+
+
 # Interpret a string as OID. The following notations are possible:
 #   SNMPv2-MIB::sysDescr.0
 #   .1.3.6.1.2.1.1.1.0
 #   .iso.org.6.internet.2.1.1.1.0
 #   sysDescr.0
 def parse_oid(oid):
-    if not isinstance(oid, str):
+    if not is_string(oid):
         return oid
     elif '::' in oid:
         mib, sym = oid.split('::', 1)
@@ -58,7 +66,7 @@ def format_oid(oid):
 #  ('1', '2', '3') -> (1, 2, 3)
 #  1 -> (1,)
 def parse_idx(idx):
-    if isinstance(idx, str):
+    if is_string(idx):
         idx = map(int, idx.split('.'))
     elif isinstance(idx, int):
         idx = idx,
