@@ -26,7 +26,7 @@ after_script:
 jobs:
   include:
     - stage: PyPi deploy
-      script: true:
+      script: true
       python: 3.6
       deploy:
         provider: pypi
