@@ -15,6 +15,7 @@
 import os.path
 import warnings
 from itertools import islice
+from pyasn1.compat.octets import null
 from robot.utils.connectioncache import ConnectionCache
 
 from .traps import _Traps
@@ -32,12 +33,13 @@ with warnings.catch_warnings():
 
 class _SnmpConnection:
 
-    def __init__(self, authentication, transport_target):
+    def __init__(self, authentication, transport_target, context_name=null):
         eng = engine.SnmpEngine()
         self.builder = eng.msgAndPduDsp.mibInstrumController.mibBuilder
 
         self.cmd_gen = cmdgen.CommandGenerator(eng)
         self.authentication_data = authentication
+        self.context_name = context_name
         self.transport_target = transport_target
 
         self.prefetched_table = {}
@@ -97,7 +99,8 @@ class SnmpLibrary(_Traps):
                                 encryption_password=None,
                                 authentication_protocol=None,
                                 encryption_protocol=None, port=161,
-                                timeout=1.0, retries=5, alias=None):
+                                timeout=1.0, retries=5, alias=None,
+                                context_name=null):
         """Opens a new SNMP v3 Connection to the given host.
 
         If no `port` is given, the default port 161 is used.
@@ -109,6 +112,9 @@ class SnmpLibrary(_Traps):
         The optional `alias` is a name for the connection and it can be used
         for switching between connections, similarly as the index. See `Switch
         Connection` for more details about that.
+
+        The optional `context_name` is the name of the SNMPv3 context to use in
+        the SNMP calls.
         """
 
         host = str(host)
@@ -165,7 +171,7 @@ class SnmpLibrary(_Traps):
         transport_target = cmdgen.UdpTransportTarget(
                                         (host, port), timeout, retries)
 
-        conn = _SnmpConnection(authentication_data, transport_target)
+        conn = _SnmpConnection(authentication_data, transport_target, context_name)
         self._active_connection = conn
 
         return self._cache.register(self._active_connection, alias)
@@ -249,7 +255,8 @@ class SnmpLibrary(_Traps):
             self._active_connection.cmd_gen.getCmd(
                 self._active_connection.authentication_data,
                 self._active_connection.transport_target,
-                oid
+                oid,
+                contextName=self._active_connection.context_name
             )
 
         if error_indication is not None:
@@ -307,7 +314,8 @@ class SnmpLibrary(_Traps):
             self._active_connection.cmd_gen.setCmd(
                 self._active_connection.authentication_data,
                 self._active_connection.transport_target,
-                *oid_values
+                *oid_values,
+                contextName=self._active_connection.context_name
             )
 
         if error_indication is not None:
@@ -390,7 +398,8 @@ class SnmpLibrary(_Traps):
             self._active_connection.cmd_gen.nextCmd(
                 self._active_connection.authentication_data,
                 self._active_connection.transport_target,
-                oid
+                oid,
+                contextName=self._active_connection.context_name
             )
 
         if error_indication:
