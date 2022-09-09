@@ -34,10 +34,10 @@ def _generic_trap_filter(domain, sock, pdu, **kwargs):
         if sock[0] != kwargs['host']:
             return False
 
-    for oid, val in v2c.apiPDU.getVarBindList(pdu):
+    for oid, val in v2c.apiPDU.getVarBinds(pdu):
         if 'oid' in kwargs and kwargs['oid']:
             if oid == snmpTrapOID:
-                if val[0][0][2] != v2c.ObjectIdentifier(kwargs['oid']):
+                if val != v2c.ObjectIdentifier(kwargs['oid']):
                     return False
     return True
 
