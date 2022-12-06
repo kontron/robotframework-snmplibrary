@@ -243,7 +243,7 @@ class SnmpLibrary(_Traps):
             self._info('Preloading all available MIBs')
         self._active_connection.builder.loadModules(*names)
 
-    def _get(self, oid, idx=(0,), expect_display_string=False):
+    def _get(self, oid, idx=(0,), expect_string=False):
 
         if self._active_connection is None:
             raise RuntimeError('No transport host set')
@@ -273,7 +273,7 @@ class SnmpLibrary(_Traps):
         if expect_display_string:
             if not univ.OctetString().isSuperTypeOf(obj):
                 raise RuntimeError('Returned value is not an octetstring')
-            value = obj.prettyOut(obj)
+            value = str(obj)
         elif univ.OctetString().isSuperTypeOf(obj):
             value = obj.asNumbers()
         else:
@@ -299,12 +299,12 @@ class SnmpLibrary(_Traps):
         return self._get(oid, idx)
 
     def get_display_string(self, oid, idx=(0,)):
-        """Does a SNMP GET request for the specified 'oid' and convert it to
-        display string.
+        """Does a SNMP GET request for the specified 'oid' and convert it
+        to a string.
 
         For more information and an example see `Get`.
         """
-        return self._get(oid, idx, expect_display_string=True)
+        return self._get(oid, idx, expect_string=True)
 
     def _set(self, *oid_values):
         for oid, value in oid_values:
