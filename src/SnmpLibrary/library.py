@@ -270,7 +270,7 @@ class SnmpLibrary(_Traps):
             raise RuntimeError('Object with OID %s not found' %
                                utils.format_oid(oid))
 
-        if expect_display_string:
+        if expect_string:
             if not univ.OctetString().isSuperTypeOf(obj):
                 raise RuntimeError('Returned value is not an octetstring')
             value = str(obj)
