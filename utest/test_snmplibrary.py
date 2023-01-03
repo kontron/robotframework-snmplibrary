@@ -1,5 +1,6 @@
-from nose.tools import eq_, raises
-from SnmpLibrary import SnmpLibrary
+import pytest
+
+from src.SnmpLibrary import SnmpLibrary
 
 a = [
     ('.1.2.3.256', '1'),
@@ -34,21 +35,21 @@ b = [
 
 
 class TestSnmpLibrary(object):
-    def setup(self):
+    def setup_method(self):
         self.s = SnmpLibrary()
 
     def test_snmplibrary_find_index(self):
-        eq_(self.s.find_index(1, a, '1', b, '0/6'), (261, ))
-        eq_(self.s.find_index(2, a, '1', b, '0/6'), (3, 261))
+        assert self.s.find_index(1, a, '1', b, '0/6') == (261, )
+        assert self.s.find_index(2, a, '1', b, '0/6') == (3, 261)
 
-    @raises(RuntimeError)
     def test_snmplibrary_find_index_invalid_arguments(self):
-        self.s.find_index(1, a, '1', b)
+        with pytest.raises(RuntimeError):
+            self.s.find_index(1, a, '1', b)
 
-    @raises(RuntimeError)
     def test_snmplibrary_find_index_no_index_found(self):
-        self.s.find_index(1, a, '1', b, '0/55')
+        with pytest.raises(RuntimeError):
+            self.s.find_index(1, a, '1', b, '0/55')
 
-    @raises(RuntimeError)
     def test_snmplibrary_find_index_ambiguous_match(self):
-        self.s.find_index(1, a, '1', b, '0/10')
+        with pytest.raises(RuntimeError):
+            self.s.find_index(1, a, '1', b, '0/10')
