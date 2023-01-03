@@ -73,10 +73,18 @@ def main():
               'Topic :: Software Development :: Testing',
           ],
           packages=['SnmpLibrary'],
-          install_requires=['robotframework', 'pysnmp'],
+          install_requires=[
+              'robotframework',
+              'pysnmp',
+
+          ],
           cmdclass={
               'build_libdoc': run_build_libdoc,
           },
+          test_suite='utest',
+          tests_require=[
+              'pytest',
+          ]
     )
 
 
